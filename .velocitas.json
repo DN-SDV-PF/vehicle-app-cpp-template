@@ -1,0 +1,29 @@
+{
+    "packages": {
+        "devenv-runtimes": "@feature/v0.1.0",
+        "devenv-github-workflows": "@feature/v0.1.0",
+        "devenv-github-templates": "@feature/v0.1.0",
+        "devenv-devcontainer-setup": "@feature/quad-local"
+    },
+    "components": [
+        "runtime-local",
+        "runtime-kanto",
+        "deployment-kanto",
+        "pantaris-integration",
+        "github-workflows",
+        "github-templates",
+        "devcontainer-setup",
+        "vehicle-signal-interface",
+        "grpc-interface-support",
+        "sdk-installer",
+        "build-system"
+    ],
+    "variables": {
+        "language": "cpp",
+        "repoType": "app",
+        "appManifestPath": "app/AppManifest.json",
+        "githubRepoId": "eclipse-velocitas/vehicle-app-cpp-template",
+        "gitProvider": "gitlab"
+    },
+    "cliVersion": "v0.1.0"
+}

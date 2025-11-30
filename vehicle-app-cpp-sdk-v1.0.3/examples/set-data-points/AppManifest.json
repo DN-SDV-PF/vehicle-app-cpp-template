@@ -1,0 +1,28 @@
+{
+    "manifestVersion": "v3",
+    "name": "set-data-points",
+    "interfaces": [
+        {
+            "type": "vehicle-signal-interface",
+            "config": {
+                "src": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v4.0/vss_rel_4.0.json",
+                "datapoints": {
+                    "required": [
+                        {
+                            "path": "Vehicle.Cabin.Seat.Row1.DriverSide.Position",
+                            "access": "write"
+                        },
+                        {
+                            "path": "Vehicle.Cabin.Seat.Row1.PassengerSide.Position",
+                            "access": "write"
+                        },
+                        {
+                            "path": "Vehicle.Speed",
+                            "access": "write"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

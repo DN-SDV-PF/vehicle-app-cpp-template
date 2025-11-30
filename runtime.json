@@ -1,0 +1,208 @@
+[
+    {
+        "id": "mqtt-broker",
+        "interfaces": [
+            "mqtt"
+        ],
+        "config": [
+            {
+                "key": "image",
+                "value": "${{ mqttBrokerImage }}"
+            },
+            {
+                "key": "port",
+                "value": "1883"
+            },
+            {
+                "key": "port-forward",
+                "value": "1883:1883"
+            },
+            {
+                "key": "port",
+                "value": "9001"
+            },
+            {
+                "key": "port-forward",
+                "value": "9001:9001"
+            },
+            {
+                "key": "arg",
+                "value": "mosquitto"
+            },
+            {
+                "key": "arg",
+                "value": "-c"
+            },
+            {
+                "key": "arg",
+                "value": "/mosquitto-no-auth.conf"
+            },
+            {
+                "key": "start-pattern",
+                "value": ".*mosquitto version \\d+\\.\\d+\\.\\d+ running\n"
+            }
+        ]
+    },
+    {
+        "id": "vehicledatabroker",
+        "interfaces": [
+            "grpc://sdv.databroker.v1.Broker/GetDatapoints",
+            "grpc://sdv.databroker.v1.Broker/Subscribe",
+            "grpc://sdv.databroker.v1.Broker/SetDatapoints"
+        ],
+        "config": [
+            {
+                "key": "enabled",
+                "value": "false"
+            },
+            {
+                "key": "image",
+                "value": "${{ vehicleDatabrokerImage }}"
+            },
+            {
+                "key": "port",
+                "value": "55555"
+            },
+            {
+                "key": "env",
+                "value": "KUKSA_DATABROKER_METADATA_FILE=${{ builtin.cache.vspec_file_path }}"
+            },
+            {
+                "key": "env",
+                "value": "KUKSA_DATABROKER_PORT=55555"
+            },
+            {
+                "key": "mount",
+                "value": "${{ builtin.cache.vspec_file_path }}:${{ builtin.cache.vspec_file_path }}"
+            },
+            {
+                "key": "start-pattern",
+                "value": ".*Listening on \\d+\\.\\d+\\.\\d+\\.\\d+:\\d+"
+            },
+            {
+                "key": "arg",
+                "value": "--enable-databroker-v1"
+            }
+        ]
+    },
+    {
+        "id": "seatservice",
+        "interfaces": [
+            "grpc://sdv.edge.comfort.seats.v1.Seats/MoveComponent"
+        ],
+        "config": [
+            {
+                "key": "enabled",
+                "value": "false"
+            },
+            {
+                "key": "image",
+                "value": "${{ seatServiceImage }}"
+            },
+            {
+                "key": "port",
+                "value": "50051"
+            },
+            {
+                "key": "env",
+                "value": "BROKER_ADDR=localhost:55555"
+            },
+            {
+                "key": "env",
+                "value": "CAN=cansim"
+            },
+            {
+                "key": "env",
+                "value": "SERVICE_PORT=50051"
+            },
+            {
+                "key": "start-pattern",
+                "value": ".*[cC]onnected to data ?broker.*"
+            }
+        ]
+    },
+    {
+        "id": "feedercan",
+        "interfaces": [ ],
+        "config": [
+            {
+                "key": "enabled",
+                "value": "false"
+            },
+            {
+                "key": "image",
+                "value": "${{ feederCanImage }}"
+            },
+            {
+                "key": "env",
+                "value": "VDB_ADDRESS=127.0.0.1:55555"
+            },
+            {
+                "key": "env",
+                "value": "LOG_LEVEL=info"
+            },
+            {
+                "key": "env",
+                "value": "databroker=info"
+            },
+            {
+                "key": "env",
+                "value": "broker_client=info"
+            },
+            {
+                "key": "env",
+                "value": "dbcfeeder=info"
+            },
+            {
+                "key": "env",
+                "value": "USECASE=databroker"
+            },
+            {
+                "key": "env",
+                "value": "CANDUMP_FILE=/data/candumpDefault.log"
+            },
+            {
+                "key": "env",
+                "value": "DBC_FILE=/data/dbcfileDefault.dbc"
+            },
+            {
+                "key": "env",
+                "value": "MAPPING_FILE=/data/vss_dbc.json"
+            },
+            {
+                "key": "mount",
+                "value": "${{ builtin.package_dir }}/config/feedercan/:/data"
+            },
+            {
+                "key": "start-pattern",
+                "value": ".*[cC]onnected to data broker.*"
+            }
+        ]
+    },
+    {
+        "id": "mockservice",
+        "interfaces": [ ],
+        "config": [
+            {
+                "key": "enabled",
+                "value": "false"
+            },
+            {
+                "key": "image",
+                "value": "${{ mockServiceImage }}"
+            },
+            {
+                "key": "env",
+                "value": "VDB_ADDRESS=127.0.0.1:55555"
+            },
+            {
+                "key": "mount",
+                "value": "$pathInWorkspaceOrPackage( ${{ mockFilePath }} ):/mock/mock.py"
+            },
+            {
+                "key": "start-pattern",
+                "value": ".*Databroker connected!*"
+            }
+        ]
+    }
+]

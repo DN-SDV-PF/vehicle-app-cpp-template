@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automotive HUD - Speed Simulator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Main 3D Road Scene */
+        .road-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom,
+                    #2a3f5f 0%,
+                    #4a6fa5 20%,
+                    #6b8cce 40%,
+                    #8fa9d3 60%,
+                    #a8b8c8 80%,
+                    #c0cbd8 100%);
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        /* Sky and horizon */
+        .horizon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(to bottom,
+                    rgba(42, 63, 95, 0.8) 0%,
+                    rgba(107, 140, 206, 0.6) 50%,
+                    rgba(168, 184, 200, 0.3) 100%);
+        }
+
+        /* Road container with perspective */
+        .road-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            transform-style: preserve-3d;
+            perspective: 800px;
+        }
+
+        /* Main road surface */
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) rotateX(85deg);
+            width: 120%;
+            height: 200%;
+            background: linear-gradient(to bottom,
+                    #5a6c7d 0%,
+                    #4a5c6d 30%,
+                    #3a4c5d 100%);
+            transform-origin: bottom center;
+        }
+
+        /* Road lanes */
+        .lane-divider {
+            position: absolute;
+            width: 3%;
+            height: 15%;
+            background: white;
+            left: 48.5%;
+            animation: laneScroll 1.5s linear infinite;
+            border-radius: 2px;
+        }
+
+        @keyframes laneScroll {
+            0% {
+                top: -20%;
+                opacity: 0;
+                transform: scaleY(0.3);
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 120%;
+                opacity: 0;
+                transform: scaleY(2);
+            }
+        }
+
+        .lane-edge-left,
+        .lane-edge-right {
+            position: absolute;
+            width: 4%;
+            height: 100%;
+            top: 0;
+        }
+
+        .lane-edge-left {
+            left: 20%;
+            border-right: 3px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .lane-edge-right {
+            right: 20%;
+            border-left: 3px solid rgba(255, 255, 255, 0.9);
+        }
+
+        /* Cars on road */
+        .traffic-car {
+            position: absolute;
+            width: 60px;
+            height: 120px;
+            animation: carApproach 3s linear infinite;
+        }
+
+        .car-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 25%, #b0b0b0 50%, #8e8e8e 75%, #6e6e6e 100%);
+            border-radius: 10px 10px 5px 5px;
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.6),
+                inset 0 2px 8px rgba(255, 255, 255, 0.4),
+                inset 0 -3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Car body shine effect */
+        .car-body::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: 10%;
+            width: 70%;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
+            border-radius: 8px 8px 0 0;
+            pointer-events: none;
+        }
+
+        .car-roof {
+            position: absolute;
+            top: 22%;
+            left: 12%;
+            width: 76%;
+            height: 42%;
+            background: linear-gradient(135deg, #d0d0d0 0%, #a0a0a0 40%, #707070 100%);
+            border-radius: 12px 12px 3px 3px;
+            box-shadow:
+                0 5px 15px rgba(0, 0, 0, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        .car-windshield {
+            position: absolute;
+            top: 8px;
+            left: 8%;
+            width: 42%;
+            height: 52%;
+            background: linear-gradient(145deg,
+                    rgba(120, 180, 220, 0.85) 0%,
+                    rgba(80, 140, 200, 0.75) 50%,
+                    rgba(60, 120, 180, 0.65) 100%);
+            border-radius: 8px 3px 2px 2px;
+            border: 1px solid rgba(200, 220, 240, 0.6);
+            box-shadow:
+                inset 2px 2px 6px rgba(255, 255, 255, 0.4),
+                inset -1px -1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Windshield reflection */
+        .car-windshield::after {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: 15%;
+            width: 50%;
+            height: 40%;
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.5), transparent);
+            border-radius: 4px;
+        }
+
+        .car-rear-window {
+            position: absolute;
+            bottom: 8px;
+            right: 8%;
+            width: 38%;
+            height: 48%;
+            background: linear-gradient(145deg,
+                    rgba(60, 120, 180, 0.7) 0%,
+                    rgba(80, 140, 200, 0.6) 50%,
+                    rgba(100, 160, 210, 0.5) 100%);
+            border-radius: 3px 8px 2px 2px;
+            border: 1px solid rgba(200, 220, 240, 0.5);
+            box-shadow:
+                inset 2px 2px 6px rgba(255, 255, 255, 0.3),
+                inset -1px -1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Side mirrors */
+        .car-mirror {
+            position: absolute;
+            width: 8px;
+            height: 10px;
+            background: linear-gradient(135deg, #a0a0a0 0%, #606060 100%);
+            border-radius: 2px;
+            box-shadow:
+                2px 2px 4px rgba(0, 0, 0, 0.4),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.3);
+            z-index: 5;
+        }
+
+        .car-mirror.left {
+            top: 35%;
+            left: -3px;
+        }
+
+        .car-mirror.right {
+            top: 35%;
+            right: -3px;
+        }
+
+        /* Hood/Bonnet detail */
+        .car-hood {
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 22%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+            border-radius: 0 0 4px 4px;
+        }
+
+        /* Grille */
+        .car-grille {
+            position: absolute;
+            bottom: 2px;
+            left: 25%;
+            width: 50%;
+            height: 8px;
+            background: linear-gradient(to bottom, #333 0%, #1a1a1a 100%);
+            border-radius: 1px;
+            border: 1px solid #222;
+        }
+
+        .car-wheel {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #4a4a4a 0%, #2a2a2a 30%, #1a1a1a 60%, #0a0a0a 100%);
+            border-radius: 50%;
+            border: 3px solid #222;
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.8),
+                inset 2px 2px 4px rgba(100, 100, 100, 0.3);
+        }
+
+        /* Wheel rim center */
+        .car-wheel::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #666 0%, #444 50%, #222 100%);
+            border-radius: 50%;
+            border: 1px solid #555;
+        }
+
+        .car-wheel.front-left {
+            bottom: 18px;
+            left: 8px;
+        }
+
+        .car-wheel.front-right {
+            bottom: 18px;
+            right: 8px;
+        }
+
+        .car-wheel.back-left {
+            top: 18px;
+            left: 8px;
+        }
+
+        .car-wheel.back-right {
+            top: 18px;
+            right: 8px;
+        }
+
+        .car-lights {
+            position: absolute;
+            bottom: 8px;
+            width: 10px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #ff6666 0%, #ff3333 50%, #cc0000 100%);
+            border-radius: 3px;
+            box-shadow:
+                0 0 8px rgba(255, 51, 51, 0.8),
+                0 0 15px rgba(255, 0, 0, 0.5),
+                inset 1px 1px 2px rgba(255, 100, 100, 0.6);
+            border: 1px solid rgba(200, 0, 0, 0.8);
+        }
+
+        .car-lights.left {
+            left: 12px;
+        }
+
+        .car-lights.right {
+            right: 12px;
+        }
+
+        @keyframes carApproach {
+            0% {
+                transform: translateY(-100%) scale(0.3);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100%) scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .traffic-car:nth-child(1) {
+            left: 35%;
+            animation-delay: 0s;
+        }
+
+        .traffic-car:nth-child(2) {
+            left: 58%;
+            animation-delay: 1s;
+        }
+
+        .traffic-car:nth-child(3) {
+            left: 42%;
+            animation-delay: 2s;
+        }
+
+        /* Player car (centered, bottom) */
+        .player-car {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 160px;
+            z-index: 100;
+        }
+
+        .player-car .car-body {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 20%, #e0e0e0 50%, #c8c8c8 80%, #b0b0b0 100%);
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.7),
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                inset 0 3px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .player-car .car-roof {
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 40%, #a8a8a8 100%);
+        }
+
+        .player-car .car-lights {
+            background: radial-gradient(circle at 30% 30%, #ffdd66 0%, #ffbb33 50%, #ff9900 100%);
+            box-shadow:
+                0 0 20px rgba(255, 170, 0, 1),
+                0 0 40px rgba(255, 140, 0, 0.6),
+                inset 1px 1px 3px rgba(255, 220, 100, 0.8);
+            border: 1px solid rgba(255, 180, 0, 0.8);
+        }
+
+        /* Red laser detection zones */
+        .detection-zone {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 0, 0, 0.8) 20%,
+                    rgba(255, 0, 0, 1) 50%,
+                    rgba(255, 0, 0, 0.8) 80%,
+                    transparent 100%);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+            animation: laserPulse 2s ease-in-out infinite;
+            z-index: 50;
+        }
+
+        @keyframes laserPulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+            }
+
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 20px rgba(255, 0, 0, 1);
+            }
+        }
+
+        /* HUD Overlay */
+        .hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Top HUD bar */
+        .hud-top {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 120px;
+            background: linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0.9) 0%,
+                    rgba(0, 0, 0, 0.7) 50%,
+                    transparent 100%);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            border-radius: 0 0 30px 30px;
+        }
+
+        /* Speed limit sign */
+        .speed-limit {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 4px solid #ff0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        /* Center speed display */
+        .speed-display {
+            text-align: center;
+        }
+
+        .speed-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 72px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .speed-unit {
+            font-size: 18px;
+            color: #aaa;
+            letter-spacing: 2px;
+        }
+
+        /* HUD icons */
+        .hud-icon {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+        }
+
+        /* Navigation display (bottom left) */
+        .nav-display {
+            position: absolute;
+            bottom: 120px;
+            left: 40px;
+            width: 280px;
+            padding: 20px;
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid rgba(0, 230, 255, 0.5);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .nav-arrow {
+            font-size: 48px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .nav-distance {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .nav-street {
+            font-size: 20px;
+            color: #aaa;
+        }
+
+        .nav-instruction {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 18px;
+            color: #fff;
+        }
+
+        /* Info display (bottom right) */
+        .info-display {
+            position: absolute;
+            bottom: 120px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .info-item {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid rgba(0, 230, 255, 0.5);
+            border-radius: 10px;
+            padding: 12px 20px;
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Control panel overlay */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid rgba(0, 230, 255, 0.5);
+            border-radius: 15px;
+            padding: 20px 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 2000;
+            pointer-events: all;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #00e6ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-input {
+            width: 80px;
+            padding: 8px;
+            background: rgba(0, 10, 30, 0.8);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 5px;
+            color: #00e6ff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+        }
+
+        .hud-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00e6ff 0%, #0088ff 100%);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .hud-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 230, 255, 0.6);
+        }
+
+        .hud-button.stop {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5252 100%);
+            color: #fff;
+        }
+
+        .status-indicator {
+            padding: 8px 15px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            color: #00ff88;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .status-indicator.stopped {
+            background: rgba(255, 23, 68, 0.2);
+            border-color: #ff1744;
+            color: #ff1744;
+        }
+
+        /* Lane mini-indicator */
+        .lane-indicator {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .lane-box {
+            width: 60px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .lane-box.current {
+            background: rgba(0, 230, 255, 0.3);
+            border-color: #00e6ff;
+        }
+
+        .lane-car-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 30px;
+            background: #00e6ff;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 3D Road Scene -->
+    <div class="road-scene">
+        <div class="horizon"></div>
+
+        <div class="road-container">
+            <div class="road">
+                <div class="lane-edge-left"></div>
+                <div class="lane-edge-right"></div>
+
+                <!-- Lane dividers -->
+                <div class="lane-divider" style="animation-delay: 0s;"></div>
+                <div class="lane-divider" style="animation-delay: 0.3s;"></div>
+                <div class="lane-divider" style="animation-delay: 0.6s;"></div>
+                <div class="lane-divider" style="animation-delay: 0.9s;"></div>
+                <div class="lane-divider" style="animation-delay: 1.2s;"></div>
+
+                <!-- Traffic cars -->
+                <div class="traffic-car" id="car1">
+                    <div class="car-body">
+                        <div class="car-roof">
+                            <div class="car-windshield"></div>
+                            <div class="car-rear-window"></div>
+                        </div>
+                        <div class="car-mirror left"></div>
+                        <div class="car-mirror right"></div>
+                        <div class="car-hood"></div>
+                        <div class="car-grille"></div>
+                        <div class="car-wheel front-left"></div>
+                        <div class="car-wheel front-right"></div>
+                        <div class="car-wheel back-left"></div>
+                        <div class="car-wheel back-right"></div>
+                        <div class="car-lights left"></div>
+                        <div class="car-lights right"></div>
+                    </div>
+                </div>
+
+                <div class="traffic-car" id="car2">
+                    <div class="car-body"
+                        style="background: linear-gradient(135deg, #90EE90 0%, #78d878 25%, #50C050 50%, #40a040 75%, #308030 100%);">
+                        <div class="car-roof">
+                            <div class="car-windshield"></div>
+                            <div class="car-rear-window"></div>
+                        </div>
+                        <div class="car-mirror left"></div>
+                        <div class="car-mirror right"></div>
+                        <div class="car-hood"></div>
+                        <div class="car-grille"></div>
+                        <div class="car-wheel front-left"></div>
+                        <div class="car-wheel front-right"></div>
+                        <div class="car-wheel back-left"></div>
+                        <div class="car-wheel back-right"></div>
+                        <div class="car-lights left"></div>
+                        <div class="car-lights right"></div>
+                    </div>
+                </div>
+
+                <div class="traffic-car" id="car3">
+                    <div class="car-body"
+                        style="background: linear-gradient(135deg, #a8d5f5 0%, #87CEEB 25%, #6ab0e0 50%, #4682B4 75%, #356090 100%);">
+                        <div class="car-roof">
+                            <div class="car-windshield"></div>
+                            <div class="car-rear-window"></div>
+                        </div>
+                        <div class="car-mirror left"></div>
+                        <div class="car-mirror right"></div>
+                        <div class="car-hood"></div>
+                        <div class="car-grille"></div>
+                        <div class="car-wheel front-left"></div>
+                        <div class="car-wheel front-right"></div>
+                        <div class="car-wheel back-left"></div>
+                        <div class="car-wheel back-right"></div>
+                        <div class="car-lights left"></div>
+                        <div class="car-lights right"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player car -->
+            <div class="player-car">
+                <div class="car-body">
+                    <div class="car-roof">
+                        <div class="car-windshield"></div>
+                        <div class="car-rear-window"></div>
+                    </div>
+                    <div class="car-mirror left"></div>
+                    <div class="car-mirror right"></div>
+                    <div class="car-hood"></div>
+                    <div class="car-grille"></div>
+                    <div class="car-wheel front-left"></div>
+                    <div class="car-wheel front-right"></div>
+                    <div class="car-wheel back-left"></div>
+                    <div class="car-wheel back-right"></div>
+                    <div class="car-lights left"></div>
+                    <div class="car-lights right"></div>
+                </div>
+            </div>
+
+            <!-- Detection zone -->
+            <div class="detection-zone"></div>
+        </div>
+    </div>
+
+    <!-- HUD Overlay -->
+    <div class="hud-overlay">
+        <!-- Top HUD bar -->
+        <div class="hud-top">
+            <div class="speed-limit" id="speedLimit">50</div>
+
+            <div class="speed-display">
+                <div class="speed-value" id="speedValue">0</div>
+                <div class="speed-unit">km/h</div>
+            </div>
+
+            <div class="hud-icon">🚗</div>
+            <div class="hud-icon">🛞</div>
+            <div class="hud-icon">🚦</div>
+            <div class="hud-icon">➡️</div>
+        </div>
+
+        <!-- Lane indicator -->
+        <div class="lane-indicator">
+            <div class="lane-box"></div>
+            <div class="lane-box current">
+                <div class="lane-car-icon"></div>
+            </div>
+            <div class="lane-box"></div>
+        </div>
+
+        <!-- Navigation display -->
+        <div class="nav-display">
+            <div class="nav-arrow">⬆️</div>
+            <div class="nav-distance">250 m</div>
+            <div class="nav-street">High Street</div>
+            <div class="nav-instruction">Then ↪️</div>
+        </div>
+
+        <!-- Info display -->
+        <div class="info-display">
+            <div class="info-item">
+                <div class="info-label">TEMP</div>
+                <div class="info-value">16.5°C</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">POWER</div>
+                <div class="info-value">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">GEAR</div>
+                <div class="info-value">D</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <div class="control-group">
+            <label class="control-label">Min Speed</label>
+            <input type="number" class="control-input" id="minSpeed" value="0" min="0" max="200">
+        </div>
+        <div class="control-group">
+            <label class="control-label">Max Speed</label>
+            <input type="number" class="control-input" id="maxSpeed" value="120" min="0" max="300">
+        </div>
+        <div class="control-group">
+            <label class="control-label">Interval (s)</label>
+            <input type="number" class="control-input" id="interval" value="2" min="1" max="60">
+        </div>
+        <button class="hud-button" id="startBtn" onclick="startSimulator()">▶ Start</button>
+        <button class="hud-button stop" id="stopBtn" onclick="stopSimulator()" disabled>⏸ Stop</button>
+        <button class="hud-button" onclick="updateSpeed()">🔄 Update</button>
+        <div class="status-indicator stopped" id="status">Standby</div>
+    </div>
+
+    <script>
+        let intervalId = null;
+        let currentSpeedValue = 0;
+        let updateCount = 0;
+
+        function updateSpeedDisplay(speed) {
+            currentSpeedValue = speed;
+            document.getElementById('speedValue').textContent = Math.round(speed);
+
+            // Update animation speeds based on speed
+            const normalizedSpeed = Math.max(0.3, speed / 120);
+
+            document.querySelectorAll('.lane-divider').forEach((divider, i) => {
+                divider.style.animationDuration = `${1.5 / normalizedSpeed}s`;
+            });
+
+            document.querySelectorAll('.traffic-car').forEach(car => {
+                car.style.animationDuration = `${3 / normalizedSpeed}s`;
+            });
+        }
+
+        async function sendSpeedUpdate(speed) {
+            try {
+                const response = await fetch('/update_speed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ speed: speed })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateCount++;
+                    updateSpeedDisplay(speed);
+                    console.log(`Speed updated to ${speed.toFixed(1)} km/h`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function startSimulator() {
+            const minSpeed = parseFloat(document.getElementById('minSpeed').value);
+            const maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
+            const interval = parseFloat(document.getElementById('interval').value) * 1000;
+
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('status').textContent = 'Running';
+            document.getElementById('status').classList.remove('stopped');
+
+            intervalId = setInterval(() => {
+                const speed = Math.random() * (maxSpeed - minSpeed) + minSpeed;
+                sendSpeedUpdate(speed);
+            }, interval);
+        }
+
+        function stopSimulator() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('status').textContent = 'Stopped';
+            document.getElementById('status').classList.add('stopped');
+        }
+
+        function updateSpeed() {
+            const minSpeed = parseFloat(document.getElementById('minSpeed').value);
+            const maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
+            const speed = Math.random() * (maxSpeed - minSpeed) + minSpeed;
+            sendSpeedUpdate(speed);
+        }
+
+        // Initialize
+        updateSpeedDisplay(0);
+    </script>
+</body>
+
+</html>

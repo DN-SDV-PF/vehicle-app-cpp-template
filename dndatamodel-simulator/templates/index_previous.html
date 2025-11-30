@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automotive HMI - DnDataModel Simulator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Animated grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 230, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 230, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: perspective(500px) rotateX(60deg) translateY(0);
+            }
+
+            100% {
+                transform: perspective(500px) rotateX(60deg) translateY(50px);
+            }
+        }
+
+        /* Main container */
+        .hmi-container {
+            position: relative;
+            z-index: 1;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        /* Header */
+        .hmi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, rgba(0, 10, 30, 0.95) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 230, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00e6ff 0%, #00a8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 230, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #00e6ff;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Main content */
+        .hmi-main {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+        }
+
+        /* Speedometer section */
+        .speedometer-section {
+            background: linear-gradient(135deg, rgba(0, 10, 30, 0.95) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 230, 255, 0.2);
+        }
+
+        .speedometer-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 230, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .speedometer {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            margin: 0 auto 30px;
+            z-index: 1;
+        }
+
+        .speed-circle {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .speed-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .speed-bg {
+            fill: none;
+            stroke: rgba(0, 230, 255, 0.1);
+            stroke-width: 20;
+        }
+
+        .speed-progress {
+            fill: none;
+            stroke: url(#speedGradient);
+            stroke-width: 20;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+            filter: drop-shadow(0 0 10px rgba(0, 230, 255, 0.8));
+        }
+
+        .speed-display-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .speed-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5em;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #00e6ff 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 230, 255, 0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 20px rgba(0, 230, 255, 0.8));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 30px rgba(0, 230, 255, 1));
+            }
+        }
+
+        .speed-label {
+            font-size: 1.2em;
+            color: #00e6ff;
+            margin-top: 10px;
+            letter-spacing: 3px;
+        }
+
+        /* 3D Road visualization - Enhanced */
+        .road-3d {
+            position: relative;
+            height: 250px;
+            background: linear-gradient(to bottom,
+                    #1a1a2e 0%,
+                    #16213e 50%,
+                    #0f1922 100%);
+            perspective: 800px;
+            overflow: hidden;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        /* Sky gradient */
+        .road-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to bottom,
+                    #1a1a2e 0%,
+                    #2d3561 50%,
+                    #3d4f7d 100%);
+            z-index: 0;
+        }
+
+        /* Road surface */
+        .road-surface {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to bottom,
+                    #2a2a3e 0%,
+                    #1f1f2e 100%);
+            border-top: 3px solid #ffeb3b;
+            box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .road-lane {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        .lane-line {
+            position: absolute;
+            width: 4px;
+            height: 40px;
+            background: #00e6ff;
+            box-shadow: 0 0 10px #00e6ff;
+            border-radius: 2px;
+            animation: laneMove 2s linear infinite;
+        }
+
+        @keyframes laneMove {
+            0% {
+                transform: translateY(0) translateZ(200px) scale(2);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(200px) translateZ(0) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .vehicle-indicator {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            width: 80px;
+            height: 140px;
+            z-index: 10;
+        }
+
+        .car-3d {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: carFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes carFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-3px) scale(1.02);
+            }
+        }
+
+        /* Car body main */
+        .car-body-main {
+            position: absolute;
+            bottom: 25px;
+            left: 10%;
+            width: 80%;
+            height: 45px;
+            background: linear-gradient(135deg, #00e6ff 0%, #0088ff 50%, #0066ff 100%);
+            border-radius: 8px;
+            box-shadow:
+                0 5px 20px rgba(0, 230, 255, 0.6),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Car roof/cabin */
+        .car-roof {
+            position: absolute;
+            bottom: 70px;
+            left: 25%;
+            width: 50%;
+            height: 35px;
+            background: linear-gradient(135deg, #0088ff 0%, #0066ff 100%);
+            border-radius: 12px 12px 4px 4px;
+            box-shadow:
+                0 5px 15px rgba(0, 230, 255, 0.4),
+                inset 0 2px 3px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Windshield */
+        .car-windshield {
+            position: absolute;
+            top: 5px;
+            left: 10%;
+            width: 35%;
+            height: 22px;
+            background: linear-gradient(135deg, rgba(100, 200, 255, 0.8) 0%, rgba(50, 150, 255, 0.9) 100%);
+            border-radius: 8px 2px 2px 2px;
+            border: 1px solid rgba(0, 230, 255, 0.5);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Back window */
+        .car-back-window {
+            position: absolute;
+            top: 5px;
+            right: 10%;
+            width: 30%;
+            height: 22px;
+            background: linear-gradient(135deg, rgba(50, 150, 255, 0.9) 0%, rgba(0, 100, 200, 0.8) 100%);
+            border-radius: 2px 8px 2px 2px;
+            border: 1px solid rgba(0, 230, 255, 0.5);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Wheels */
+        .car-wheel {
+            position: absolute;
+            bottom: 15px;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle, #2c3e50 40%, #1a252f 60%, #0d1419 100%);
+            border-radius: 50%;
+            border: 3px solid #34495e;
+            box-shadow:
+                0 3px 8px rgba(0, 0, 0, 0.8),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+                inset 0 2px 2px rgba(255, 255, 255, 0.2);
+            animation: wheelSpin 0.8s linear infinite;
+        }
+
+        .car-wheel::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: #00e6ff;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0, 230, 255, 0.8);
+        }
+
+        .car-wheel.front {
+            right: 8px;
+        }
+
+        .car-wheel.back {
+            left: 8px;
+        }
+
+        @keyframes wheelSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Headlights */
+        .car-headlight {
+            position: absolute;
+            bottom: 35px;
+            width: 8px;
+            height: 12px;
+            background: linear-gradient(180deg, #fff 0%, #ffeb3b 100%);
+            border-radius: 2px;
+            box-shadow:
+                0 0 10px rgba(255, 235, 59, 0.8),
+                0 0 20px rgba(255, 235, 59, 0.4);
+        }
+
+        .car-headlight.left {
+            right: 8px;
+        }
+
+        .car-headlight.right {
+            right: 20px;
+        }
+
+        /* Taillights */
+        .car-taillight {
+            position: absolute;
+            bottom: 35px;
+            width: 6px;
+            height: 10px;
+            background: linear-gradient(180deg, #ff1744 0%, #c62828 100%);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(255, 23, 68, 0.6);
+        }
+
+        .car-taillight.left {
+            left: 8px;
+        }
+
+        .car-taillight.right {
+            left: 18px;
+        }
+
+        /* Side mirror effect */
+        .car-mirror {
+            position: absolute;
+            top: 15px;
+            width: 8px;
+            height: 6px;
+            background: linear-gradient(135deg, #0088ff 0%, #0066ff 100%);
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .car-mirror.left {
+            left: -5px;
+        }
+
+        .car-mirror.right {
+            right: -5px;
+        }
+
+        /* Road lanes */
+        .road-lanes {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .road-edge {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background: #ffeb3b;
+            box-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+        }
+
+        .road-edge.left {
+            left: 20%;
+            width: 1px;
+            height: 100%;
+            animation: roadEdgeMove 2s linear infinite;
+        }
+
+        .road-edge.right {
+            right: 20%;
+            width: 1px;
+            height: 100%;
+            animation: roadEdgeMove 2s linear infinite;
+        }
+
+        @keyframes roadEdgeMove {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(2);
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(200px) scale(0.5);
+            }
+        }
+
+        /* Environment elements */
+        .environment {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            transform-style: preserve-3d;
+            perspective: 800px;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: starTwinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes starTwinkle {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.5);
+            }
+        }
+
+        .tree {
+            position: absolute;
+            width: 30px;
+            height: 50px;
+            animation: treeMove 4s linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        .tree-trunk {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(to right, #2d1f1f 0%, #4a3030 100%);
+            border-radius: 2px;
+        }
+
+        .tree-leaves {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 35px;
+            background: linear-gradient(135deg, #1e5c3e 0%, #2d7a52 100%);
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes treeMove {
+            0% {
+                transform: translateY(-50px) scale(0.3);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100px) scale(2);
+                opacity: 0;
+            }
+        }
+
+        .building {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(to bottom, #2a3d5c 0%, #1a2d4c 100%);
+            box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3);
+            animation: buildingMove 6s linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        .building::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 8px,
+                    rgba(255, 235, 59, 0.2) 8px,
+                    rgba(255, 235, 59, 0.2) 10px);
+        }
+
+        @keyframes buildingMove {
+            0% {
+                transform: translateY(-50px) scale(0.4);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.7;
+            }
+
+            90% {
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(100px) scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(200, 220, 255, 0.3);
+            border-radius: 50px;
+            animation: cloudMove 15s linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(200, 220, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .cloud::before {
+            width: 30px;
+            height: 30px;
+            top: -15px;
+            left: 10px;
+        }
+
+        .cloud::after {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            right: 10px;
+        }
+
+        @keyframes cloudMove {
+            0% {
+                transform: translateY(-30px) scale(0.6);
+                opacity: 0.2;
+            }
+
+            100% {
+                transform: translateY(50px) scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* Control panel */
+        .control-panel {
+            background: linear-gradient(135deg, rgba(0, 10, 30, 0.95) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 230, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(0, 230, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1em;
+            color: #00e6ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-label {
+            display: block;
+            color: #00e6ff;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 10, 30, 0.8);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 8px;
+            color: #00e6ff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: #00e6ff;
+            box-shadow: 0 0 15px rgba(0, 230, 255, 0.5);
+        }
+
+        .hmi-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00e6ff 0%, #0088ff 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 230, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hmi-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .hmi-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .hmi-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 230, 255, 0.6);
+        }
+
+        .hmi-button:active {
+            transform: translateY(0);
+        }
+
+        .hmi-button.btn-stop {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5252 100%);
+            box-shadow: 0 5px 20px rgba(255, 23, 68, 0.4);
+        }
+
+        .hmi-button.btn-stop:hover {
+            box-shadow: 0 8px 30px rgba(255, 23, 68, 0.6);
+        }
+
+        .hmi-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 230, 255, 0.1);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 10px;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-display.running {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+
+        .status-display.stopped {
+            background: rgba(255, 23, 68, 0.1);
+            border-color: rgba(255, 23, 68, 0.5);
+            color: #ff1744;
+        }
+
+        /* Log display */
+        .log-display {
+            background: rgba(0, 10, 30, 0.8);
+            border: 1px solid rgba(0, 230, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            color: #00e6ff;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .log-entry.success {
+            color: #00ff88;
+        }
+
+        .log-entry.error {
+            color: #ff1744;
+        }
+
+        /* Footer */
+        .hmi-footer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(0, 10, 30, 0.95) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 1px solid rgba(0, 230, 255, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 230, 255, 0.2);
+        }
+
+        .info-card {
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(0, 230, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            color: #00e6ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 10, 30, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 230, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 230, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .hmi-main {
+                grid-template-columns: 1fr;
+            }
+
+            .speedometer {
+                width: 280px;
+                height: 280px;
+            }
+
+            .speed-number {
+                font-size: 4em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-bg"></div>
+
+    <div class="hmi-container">
+        <!-- Header -->
+        <div class="hmi-header">
+            <div class="logo">⚡ DN AUTOMOTIVE HMI</div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>QUAD BROKER</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>MQTT LIVE</span>
+                </div>
+                <div class="status-item">
+                    <span id="currentTime">--:--:--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="hmi-main">
+            <!-- Speedometer section -->
+            <div class="speedometer-section">
+                <div class="speedometer">
+                    <div class="speed-circle">
+                        <svg width="350" height="350">
+                            <defs>
+                                <linearGradient id="speedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#00e6ff;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#0088ff;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="175" cy="175" r="160" class="speed-bg" />
+                            <circle cx="175" cy="175" r="160" class="speed-progress" id="speedProgress"
+                                stroke-dasharray="1005" stroke-dashoffset="1005" />
+                        </svg>
+                    </div>
+                    <div class="speed-display-center">
+                        <div class="speed-number" id="speedValue">0</div>
+                        <div class="speed-label">KM/H</div>
+                    </div>
+                </div>
+
+                <div class="road-3d">
+                    <!-- Environment elements -->
+                    <div class="environment" id="environment"></div>
+
+                    <div class="road-lanes">
+                        <div class="road-edge left"></div>
+                        <div class="road-edge right"></div>
+                    </div>
+                    <div class="road-lane" id="roadLane"></div>
+                    <div class="vehicle-indicator">
+                        <div class="car-3d">
+                            <div class="car-roof">
+                                <div class="car-windshield"></div>
+                                <div class="car-back-window"></div>
+                                <div class="car-mirror left"></div>
+                                <div class="car-mirror right"></div>
+                            </div>
+                            <div class="car-body-main">
+                                <div class="car-headlight left"></div>
+                                <div class="car-headlight right"></div>
+                                <div class="car-taillight left"></div>
+                                <div class="car-taillight right"></div>
+                            </div>
+                            <div class="car-wheel front"></div>
+                            <div class="car-wheel back"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control panel -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <div class="panel-title">⚙️ Configuration</div>
+                    <div class="control-group">
+                        <label class="control-label">Min Speed (km/h)</label>
+                        <input type="number" class="control-input" id="minSpeed" value="0" min="0" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Max Speed (km/h)</label>
+                        <input type="number" class="control-input" id="maxSpeed" value="120" min="0" max="300">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Update Interval (s)</label>
+                        <input type="number" class="control-input" id="interval" value="2" min="1" max="60">
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">🎮 Controls</div>
+                    <button class="hmi-button" id="startBtn" onclick="startSimulator()">▶ Start Simulator</button>
+                    <button class="hmi-button btn-stop" id="stopBtn" onclick="stopSimulator()" disabled>⏸ Stop
+                        Simulator</button>
+                    <button class="hmi-button" id="updateBtn" onclick="updateSpeed()">🔄 Update Once</button>
+                </div>
+
+                <div class="status-display stopped" id="status">
+                    Status: Standby
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">📊 Activity Log</div>
+                    <div class="log-display" id="log"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="hmi-footer">
+            <div class="info-card">
+                <div class="info-label">Updates Sent</div>
+                <div class="info-value" id="updateCount">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Success Rate</div>
+                <div class="info-value" id="successRate">100%</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Avg Speed</div>
+                <div class="info-value" id="avgSpeed">0 km/h</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Last Update</div>
+                <div class="info-value" id="lastUpdate">--:--</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let intervalId = null;
+        let currentSpeedValue = 0;
+        let updateCount = 0;
+        let totalSpeed = 0;
+        let errorCount = 0;
+
+        // Create lane lines
+        function createLaneLines() {
+            const roadLane = document.getElementById('roadLane');
+            for (let i = 0; i < 8; i++) {
+                const line = document.createElement('div');
+                line.className = 'lane-line';
+                line.style.left = '50%';
+                line.style.transform = 'translateX(-50%)';
+                line.style.animationDelay = `${i * 0.25}s`;
+                roadLane.appendChild(line);
+            }
+        }
+
+        // Create environment elements
+        function createEnvironment() {
+            const environment = document.getElementById('environment');
+
+            // Create stars
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 60}%`;
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                environment.appendChild(star);
+            }
+
+            // Create trees (on both sides, appear to come from horizon)
+            for (let i = 0; i < 4; i++) {
+                const tree = document.createElement('div');
+                tree.className = 'tree';
+                tree.style.animationDelay = `${i * 1.2}s`;
+                tree.style.left = i % 2 === 0 ? '10%' : '85%';
+                tree.style.top = '30%';
+
+                const trunk = document.createElement('div');
+                trunk.className = 'tree-trunk';
+                tree.appendChild(trunk);
+
+                const leaves = document.createElement('div');
+                leaves.className = 'tree-leaves';
+                tree.appendChild(leaves);
+
+                environment.appendChild(tree);
+            }
+
+            // Create buildings (on both sides)
+            for (let i = 0; i < 3; i++) {
+                const building = document.createElement('div');
+                building.className = 'building';
+                building.style.animationDelay = `${i * 2.5 + 0.5}s`;
+                building.style.left = i % 2 === 0 ? '15%' : '80%';
+                building.style.top = '25%';
+                building.style.height = `${50 + Math.random() * 40}px`;
+                environment.appendChild(building);
+            }
+
+            // Create clouds
+            for (let i = 0; i < 4; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.width = `${50 + Math.random() * 50}px`;
+                cloud.style.height = `${20 + Math.random() * 15}px`;
+                cloud.style.left = `${15 + i * 20}%`;
+                cloud.style.top = `${10 + Math.random() * 20}%`;
+                cloud.style.animationDelay = `${i * 4}s`;
+                environment.appendChild(cloud);
+            }
+        }
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        }
+
+        function addLog(message, type = 'normal') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+
+            while (log.children.length > 50) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function updateSpeedometer(speed) {
+            currentSpeedValue = speed;
+            const maxSpeed = 300;
+            const circumference = 2 * Math.PI * 160;
+            const offset = circumference - (speed / maxSpeed) * circumference;
+
+            document.getElementById('speedProgress').style.strokeDashoffset = offset;
+            document.getElementById('speedValue').textContent = Math.round(speed);
+
+            // Update lane animation speed
+            const laneLines = document.querySelectorAll('.lane-line');
+            const animationDuration = speed > 0 ? Math.max(0.5, 2 - (speed / 150)) : 999;
+            laneLines.forEach((line, index) => {
+                if (speed > 0) {
+                    line.style.animation = `laneMove ${animationDuration}s linear infinite`;
+                    line.style.animationDelay = `${index * (animationDuration / 8)}s`;
+                } else {
+                    line.style.animation = 'none';
+                }
+            });
+
+            // Update environment animation speeds based on speed
+            const trees = document.querySelectorAll('.tree');
+            const buildings = document.querySelectorAll('.building');
+            const treeDuration = speed > 0 ? Math.max(2, 4 - (speed / 100)) : 999;
+            const buildingDuration = speed > 0 ? Math.max(3, 6 - (speed / 80)) : 999;
+
+            trees.forEach(tree => {
+                if (speed > 0) {
+                    tree.style.animationDuration = `${treeDuration}s`;
+                } else {
+                    tree.style.animationPlayState = 'paused';
+                }
+            });
+
+            buildings.forEach(building => {
+                if (speed > 0) {
+                    building.style.animationDuration = `${buildingDuration}s`;
+                } else {
+                    building.style.animationPlayState = 'paused';
+                }
+            });
+
+            // Update wheel spin speed
+            const wheels = document.querySelectorAll('.car-wheel');
+            const wheelDuration = speed > 0 ? Math.max(0.2, 0.8 - (speed / 300)) : 999;
+            wheels.forEach(wheel => {
+                if (speed > 0) {
+                    wheel.style.animationDuration = `${wheelDuration}s`;
+                } else {
+                    wheel.style.animationPlayState = 'paused';
+                }
+            });
+        }
+
+        async function sendSpeedUpdate(speed) {
+            try {
+                const response = await fetch('/update_speed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ speed: speed })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateCount++;
+                    totalSpeed += speed;
+                    addLog(`✓ Speed updated to ${speed.toFixed(1)} km/h`, 'success');
+                    updateSpeedometer(speed);
+                    updateStats();
+                } else {
+                    errorCount++;
+                    addLog(`✗ Error: ${data.message}`, 'error');
+                    updateStats();
+                }
+            } catch (error) {
+                errorCount++;
+                addLog(`✗ Network error: ${error.message}`, 'error');
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('updateCount').textContent = updateCount;
+            const successRate = updateCount + errorCount > 0
+                ? ((updateCount / (updateCount + errorCount)) * 100).toFixed(1)
+                : 100;
+            document.getElementById('successRate').textContent = successRate + '%';
+
+            const avgSpeed = updateCount > 0 ? (totalSpeed / updateCount).toFixed(1) : 0;
+            document.getElementById('avgSpeed').textContent = avgSpeed + ' km/h';
+
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString().slice(0, 5);
+        }
+
+        function generateRandomSpeed() {
+            const min = parseFloat(document.getElementById('minSpeed').value);
+            const max = parseFloat(document.getElementById('maxSpeed').value);
+            return Math.random() * (max - min) + min;
+        }
+
+        async function updateSpeed() {
+            const speed = generateRandomSpeed();
+            await sendSpeedUpdate(speed);
+        }
+
+        function startSimulator() {
+            if (intervalId) return;
+
+            const interval = parseInt(document.getElementById('interval').value) * 1000;
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('status').className = 'status-display running';
+            document.getElementById('status').textContent = 'Status: Active';
+
+            addLog('🚀 Simulator started', 'success');
+
+            updateSpeed();
+            intervalId = setInterval(updateSpeed, interval);
+        }
+
+        function stopSimulator() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('status').className = 'status-display stopped';
+            document.getElementById('status').textContent = 'Status: Standby';
+
+            addLog('⏹ Simulator stopped', 'error');
+            updateSpeedometer(0);
+        }
+
+        // Initialize
+        createLaneLines();
+        createEnvironment();
+        updateClock();
+        setInterval(updateClock, 1000);
+        updateSpeedometer(0);
+        addLog('System initialized and ready');
+    </script>
+</body>
+
+</html>

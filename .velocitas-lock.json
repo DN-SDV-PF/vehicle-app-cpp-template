@@ -1,0 +1,8 @@
+{
+    "packages": {
+        "devenv-runtimes": "@feature/v0.1.0",
+        "devenv-github-workflows": "@feature/v0.1.0",
+        "devenv-github-templates": "@feature/v0.1.0",
+        "devenv-devcontainer-setup": "@feature/quad-local"
+    }
+}

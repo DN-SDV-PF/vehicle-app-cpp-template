@@ -1,0 +1,19 @@
+version: "2.4"
+
+services:
+  dndatamodel-simulator:
+    build: .
+    image: dndatamodel-simulator:latest
+    container_name: dndatamodel-simulator
+    ports:
+      - "8081:8081" # Web UI port
+    environment:
+      - PYTHONUNBUFFERED=1
+    network_mode: "host"
+    restart: unless-stopped
+    command: [ "python", "simulator_web.py", "--quad-url", "http://localhost:50050", "--port", "8081", "--interval", "2.0", "--autostart" ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

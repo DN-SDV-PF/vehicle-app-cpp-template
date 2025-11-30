@@ -1,0 +1,9 @@
+[38;2;255;255;255m2025-11-22 22:12:10.584780871, INFO  : Using Duo Databroker duo API
+[0m[38;2;255;255;255m2025-11-22 22:12:10.584849907, INFO  : Connecting to data broker service 'quadgrpc' via '127.0.0.1:50051'
+[0m[38;2;255;255;255m2025-11-22 22:12:10.586627557, INFO  : Starting app ...
+[0m[38;2;255;255;255m2025-11-22 22:12:10.586669418, INFO  : Connecting to MQTT broker at 'localhost:1883' with client-id 'SampleApp'
+[0m[38;2;255;255;255m2025-11-22 22:12:10.698379610, INFO  : Subscribing to Vehicle.EgoVehicle.Motion.Locomotion.Speed datapoint...
+[0m[38;2;255;255;255m2025-11-22 22:12:10.704414411, INFO  : Speed subscription request sent
+[0m[38;2;165;042;042m2025-11-22 22:12:10.704467043, DEBUG : Subscribing to sampleapp/getSpeed
+[0m[38;2;255;255;255m2025-11-22 22:12:10.705224168, INFO  : App is running.
+[0m

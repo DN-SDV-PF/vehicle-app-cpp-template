@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DnDataModel Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .animation-panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .speed-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .speed-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .speed-unit {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        /* Road Animation */
+        .road-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 65%, #90EE90 65%, #90EE90 100%);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .sun {
+            position: absolute;
+            top: 40px;
+            right: 60px;
+            width: 60px;
+            height: 60px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 140px;
+            background: #404040;
+            border-top: 4px solid #FFD700;
+            border-bottom: 4px solid #FFD700;
+        }
+
+        .road-line {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 8px;
+            background: white;
+        }
+
+        .car {
+            position: absolute;
+            bottom: 30px;
+            left: 20%;
+            width: 100px;
+            height: 50px;
+            transition: left 0.3s ease-out;
+        }
+
+        .car-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .car-main {
+            position: absolute;
+            bottom: 10px;
+            width: 100px;
+            height: 24px;
+            background: #e74c3c;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .car-top {
+            position: absolute;
+            bottom: 34px;
+            left: 25px;
+            width: 50px;
+            height: 18px;
+            background: #c0392b;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .car-window-front {
+            position: absolute;
+            bottom: 2px;
+            left: 8px;
+            width: 18px;
+            height: 12px;
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        .car-window-back {
+            position: absolute;
+            bottom: 2px;
+            right: 8px;
+            width: 14px;
+            height: 12px;
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        .wheel {
+            position: absolute;
+            bottom: 0;
+            width: 16px;
+            height: 16px;
+            background: #2c3e50;
+            border-radius: 50%;
+            border: 3px solid #34495e;
+        }
+
+        .wheel.front {
+            right: 12px;
+        }
+
+        .wheel.back {
+            left: 12px;
+        }
+
+        .headlight {
+            position: absolute;
+            bottom: 14px;
+            right: -2px;
+            width: 8px;
+            height: 6px;
+            background: #f39c12;
+            border-radius: 2px;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+            opacity: 0.9;
+        }
+
+        .cloud1 {
+            top: 60px;
+            left: 10%;
+            width: 80px;
+            height: 30px;
+        }
+
+        .cloud2 {
+            top: 120px;
+            right: 15%;
+            width: 100px;
+            height: 35px;
+        }
+
+        .cloud3 {
+            top: 90px;
+            left: 50%;
+            width: 70px;
+            height: 25px;
+        }
+
+        .speedometer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .speedometer-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .speedometer-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            flex: 0 0 140px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-stop {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-update {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-update:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .status.running {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.stopped {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            color: #495057;
+        }
+
+        .log-entry.success {
+            color: #28a745;
+        }
+
+        .log-entry.error {
+            color: #dc3545;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 DnDataModel Simulator</h1>
+            <p class="subtitle">Vehicle Speed Signal Generator with Live Animation</p>
+        </div>
+
+        <div class="main-content">
+            <div class="animation-panel">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px; font-size: 1.5em;">🏁 Vehicle Animation
+                </h2>
+                <div class="road-container" id="roadContainer">
+                    <div class="sun"></div>
+                    <div class="cloud cloud1"></div>
+                    <div class="cloud cloud2"></div>
+                    <div class="cloud cloud3"></div>
+                    <div class="road" id="road">
+                        <div class="road-line" id="line1"></div>
+                        <div class="road-line" id="line2"></div>
+                        <div class="road-line" id="line3"></div>
+                        <div class="road-line" id="line4"></div>
+                        <div class="road-line" id="line5"></div>
+                    </div>
+                    <div class="car" id="car">
+                        <div class="car-body">
+                            <div class="car-top"></div>
+                            <div class="car-main"></div>
+                            <div class="car-window-front"></div>
+                            <div class="car-window-back"></div>
+                            <div class="wheel front" id="wheelFront"></div>
+                            <div class="wheel back" id="wheelBack"></div>
+                            <div class="headlight"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="speedometer">
+                    <div class="speedometer-value"><span id="animSpeed">0</span> km/h</div>
+                    <div class="speedometer-label">Current Vehicle Speed</div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="speed-display">
+                    <div class="speed-value" id="currentSpeed">0</div>
+                    <div class="speed-unit">km/h</div>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="minSpeed">Min Speed</label>
+                        <input type="number" id="minSpeed" value="0" min="0" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label for="maxSpeed">Max Speed</label>
+                        <input type="number" id="maxSpeed" value="120" min="0" max="300">
+                    </div>
+                    <div class="control-group">
+                        <label for="interval">Update Interval (s)</label>
+                        <input type="number" id="interval" value="2" min="1" max="60">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-start" id="startBtn" onclick="startSimulator()">▶️ Start Simulator</button>
+                    <button class="btn-stop" id="stopBtn" onclick="stopSimulator()" disabled>⏸️ Stop Simulator</button>
+                    <button class="btn-update" id="updateBtn" onclick="updateSpeed()">🔄 Update Once</button>
+                </div>
+
+                <div class="status stopped" id="status">
+                    Status: Stopped
+                </div>
+
+                <div class="log" id="log">
+                    <div class="log-entry">✓ Ready to start simulation...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let intervalId = null;
+        let animationId = null;
+        let currentSpeedValue = 0;
+        let roadLinePositions = [0, 25, 50, 75, 100];
+
+        function addLog(message, type = 'normal') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function updateCarAnimation(speed) {
+            currentSpeedValue = speed;
+            document.getElementById('animSpeed').textContent = speed.toFixed(1);
+            document.getElementById('currentSpeed').textContent = speed.toFixed(1);
+
+            // Update road line animation speed based on vehicle speed
+            const animationDuration = speed > 0 ? Math.max(0.5, 3 - (speed / 50)) : 999;
+            const roadLines = document.querySelectorAll('.road-line');
+
+            if (speed > 0) {
+                // Animate road lines
+                roadLines.forEach((line, index) => {
+                    line.style.animation = `roadMove ${animationDuration}s linear infinite`;
+                    line.style.animationDelay = `${index * (animationDuration / 5)}s`;
+                });
+
+                // Spin wheels
+                document.getElementById('wheelFront').style.animation = `wheelSpin ${Math.max(0.2, 1 - speed / 150)}s linear infinite`;
+                document.getElementById('wheelBack').style.animation = `wheelSpin ${Math.max(0.2, 1 - speed / 150)}s linear infinite`;
+
+                // Slightly move car position based on speed
+                const car = document.getElementById('car');
+                const basePosition = 20;
+                const maxOffset = 10;
+                const offset = (speed / 300) * maxOffset;
+                car.style.left = `${basePosition + offset}%`;
+            } else {
+                // Stop animations when speed is 0
+                roadLines.forEach(line => {
+                    line.style.animation = 'none';
+                });
+                document.getElementById('wheelFront').style.animation = 'none';
+                document.getElementById('wheelBack').style.animation = 'none';
+            }
+        }
+
+        async function sendSpeedUpdate(speed) {
+            try {
+                const response = await fetch('/update_speed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ speed: speed })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addLog(`✓ Speed updated to ${speed.toFixed(1)} km/h`, 'success');
+                    updateCarAnimation(speed);
+                } else {
+                    addLog(`✗ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                addLog(`✗ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function generateRandomSpeed() {
+            const min = parseFloat(document.getElementById('minSpeed').value);
+            const max = parseFloat(document.getElementById('maxSpeed').value);
+            return Math.random() * (max - min) + min;
+        }
+
+        async function updateSpeed() {
+            const speed = generateRandomSpeed();
+            await sendSpeedUpdate(speed);
+        }
+
+        function startSimulator() {
+            if (intervalId) return;
+
+            const interval = parseInt(document.getElementById('interval').value) * 1000;
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('status').className = 'status running';
+            document.getElementById('status').textContent = 'Status: Running';
+
+            addLog('🚀 Simulator started', 'success');
+
+            // Update immediately
+            updateSpeed();
+
+            // Then update at intervals
+            intervalId = setInterval(updateSpeed, interval);
+        }
+
+        function stopSimulator() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('status').className = 'status stopped';
+            document.getElementById('status').textContent = 'Status: Stopped';
+
+            addLog('⏹️ Simulator stopped', 'error');
+
+            // Stop the car animation
+            updateCarAnimation(0);
+        }
+
+        // Add keyframes for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes roadMove {
+                from { left: 100%; }
+                to { left: -100px; }
+            }
+            @keyframes wheelSpin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        updateCarAnimation(0);
+        addLog('System initialized and ready');
+    </script>
+</body>
+
+</html>

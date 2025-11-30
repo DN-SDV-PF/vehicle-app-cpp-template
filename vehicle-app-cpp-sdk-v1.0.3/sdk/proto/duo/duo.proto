@@ -1,0 +1,676 @@
+/**
+ * Duo common data types.
+ */
+syntax = "proto3";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+import "duo/types.proto"; // NOTE: newly added
+
+
+option go_package = "github.com/bumblebee-jp/duo_rust/gateway;duo";
+
+// import "protoc-gen-openapiv2/options/annotations.proto";
+// option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+//   info: {
+//     version: "1.0";
+//   }
+//   external_docs: {
+//     url: "https://github.com/bumblebee-jp/duo_rust/gateway";
+//     description: "gRPC-gateway";
+//   }
+//   schemes: HTTP;
+// };
+
+package duo;
+
+/**
+ * Represents the status code for duo operation.
+ * These are used in duo's response.
+ */
+enum StatusCode{
+  INTERNAL_SERVER_ERROR = 0; // unexpected error is happend in the server
+  OK = 1; // Okay
+  BAD_REQUEST = 2; // request is invalid
+  CONFLICT = 3; // sending data is conflict
+}
+
+
+
+/**
+ * Service for handling device shadow.
+ */
+service ShadowService{
+  rpc GetThingList(GetThingListRequest) returns (GetThingListResponse) {
+    option (google.api.http) = {
+      get: "/things"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get thing list managed by duo"
+    //   description: "Get thing list managed by duo"
+    //   tags: "Thing"
+    // };
+  }; // Used to get thing list managed by duo
+  rpc GetReport(GetReportRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/reports/{thing}"
+      additional_bindings {get: "/reports/{thing}/{path}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*/*}"}
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get target report"
+    //   description: "Used to get reported data"
+    // };
+  }; // Used to get reported data
+  rpc GetDesire(GetDesireRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/desires/{thing}"
+      additional_bindings {get: "/desires/{thing}/{path}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*}"}
+      additional_bindings {get: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*/*}"}
+
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get target desire"
+    //   description: "Used to get desired data"
+    // };
+  }; // Used to get desired data
+  rpc GetDelta(GetDeltaRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/deltas/{thing}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get target delta"
+    //   description: "Used to get delta data(difference between reported data and desired data)"
+    // };
+  }; // Used to get delta data(difference between reported data and desired data)
+  rpc PatchReport(PatchReportRequest) returns (PatchResponse) {
+    option (google.api.http) = {
+      patch: "/reports/{thing}",body: "*"
+      additional_bindings {patch: "/reports/{thing}/{path}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/reports/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Update target report"
+    //   description: "Used to report data"
+    // };
+  }; // Used to report data
+  rpc PatchDesire(PatchDesireRequest) returns (PatchResponse) {
+    option (google.api.http) = {
+      patch: "/desires/{thing}",body: "*"
+      additional_bindings {patch: "/desires/{thing}/{path}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+      additional_bindings {patch: "/desires/{thing}/{path=*/*/*/*/*/*/*/*/*/*/*/*/*}",body: "*"}
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Update target desire"
+    //   description: "Used to desire data"
+    // };
+  }; // Used to desire data
+
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/things/{thing}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Delete target thing"
+    //   description: "Used to delete all data for the thing"
+    // };
+  }; // Used to delete all data for the thing
+  rpc Upload(stream UploadRequest) returns (UploadResponse); // Used to upload file
+
+  rpc PatchDesireAndWait(PatchDesireRequest) returns (stream PatchAndWaitResponse); // Update desire data and wait for apply it
+  rpc ListenReport(ListenReportRequest) returns(stream ListenResponse); // Used to start listening for reported data
+  rpc ListenDesire(ListenDesireRequest) returns(stream ListenResponse); // Used to start listening for desired data
+  rpc ListenDelta(ListenDeltaRequest) returns(stream ListenResponse); // Used to start listening for delta data
+  rpc Ping(PingRequest) returns(PingResponse);
+}
+
+
+/**
+ * Represents the request message for getting reported data
+ */
+message GetReportRequest{
+  string thing = 1; // thing name to get reported data
+  optional string path = 2; // target path to get data E.g. "Vehicle/IgnitionOn"
+  repeated string filters = 3; // path for get data. If path is not empty, filters work relative from "path".
+}
+
+/**
+ * Represents the request message for getting desired data
+ */
+message GetDesireRequest{
+  string thing = 1; // thing name to get desired data
+  optional string path = 2; // target path to get data E.g. "Vehicle/IgnitionOn"
+  repeated string filters = 3; // path for get data. If path is not empty, filters work relative from "path".
+}
+
+/**
+ * Represents the request message for getting delta data
+ */
+message GetDeltaRequest{
+  string thing = 1;  // thing name to get delta data
+  optional string path = 2; // target path to get data E.g. "Vehicle/IgnitionOn"
+  repeated string filters = 3; // path for get data. If path is not empty, filters work relative from "path".
+}
+
+/**
+ * Represents the request message for sending report data
+ */
+message PatchReportRequest{
+  string thing = 1;  // thing name to send reported data
+  optional string path = 2; // target path to send data E.g. "Vehicle/IgnitionOn"
+
+  optional google.protobuf.Value item = 3; // data to send, , you should specify item or items or both item & items.
+
+  optional google.protobuf.Value condition = 4; // pre-condition for Optimistic locking.  E.g. {"Vehicle":{"Ignition": true}}
+  optional google.protobuf.Struct meta = 5; // meta data for indicating special information to Duo
+  optional string ignore_listener_id = 6; // If this id matches the listener id, the listener won't receive this notification.
+
+  optional google.protobuf.ListValue items = 7; // multiple data to send, you should specify item or items or both item & items.
+}
+
+/**
+ * Represents the request message for sending desired data
+ */
+message PatchDesireRequest{
+  string thing = 1;  // thing name to send desired data
+  optional string path = 2; // target path to send data E.g. "Vehicle/IgnitionOn"
+  google.protobuf.Value item = 3; // data to send
+  optional google.protobuf.Value condition = 4; // pre-condition for Optimistic locking.  E.g. {"Vehicle":{"Ignition": true}}
+  optional google.protobuf.Struct meta = 5; // meta data for indicating special information to Duo
+  optional string ignore_listener_id = 6; // If this id matches the listener id, the listener won't receive this notification.
+}
+
+/**
+ * Represents the request message for deleting all data for the thing
+ */
+message DeleteRequest{
+  string thing = 1;  // thing name to delete all data
+}
+
+
+/**
+ * Represents the metadata for uploading data
+ */
+message UploadMetadata{
+  string thing = 1;  // thing name to upload file
+  string path = 2; // file path to upload file E.g. "video/20210911/12345678.mp4"
+}
+
+
+/**
+ * Represents the request message for uploading file
+ */
+message UploadRequest{
+  oneof data{
+    UploadMetadata meta = 1; // metadata about uploading file
+    bytes chunk = 2; // uploading data chunk
+  }
+}
+
+
+/**
+ * Represents the request message for getting things list in Duo
+ * For getting long list of things, please use pagenation function.
+ */
+message GetThingListRequest{
+  optional string from = 1; //pagination next_token of previous GetThingListRequest
+  optional int32 page_size = 2; //pagination size
+  optional string filter = 3; // RQL query
+}
+
+/**
+ * Represents the request message for starting listening reported data
+ */
+message ListenReportRequest{
+  string thing = 1;  // thing name to listen reported data
+  optional bool no_merge = 2; // needs all reported data as is when the client reports multiple data? (If false, only merged JSON data is arrived.)
+  repeated string filters = 3; // path for listening data. If empty, all data is listened.  E.g. ["Vehicle/IgnitionOn", "Body/Trunk/IsLocked"]
+  optional string id = 4; // Specify a unique ID. uuid v4 is recommended. This ID can be specified by the patch sender. Than the listener doesn't receive the message.
+  optional bool needs_initial_value = 5;
+}
+
+/**
+ * Represents the request message for starting listening desired data
+ */
+message ListenDesireRequest{
+  string thing = 1;  // thing name to listen desired data
+  repeated string filters = 2; // path for listening data. If empty, all data is listened.  E.g. ["Vehicle/IgnitionOn", "Body/Trunk/IsLocked"]
+  optional string id = 3; // Specify a unique ID. uuid v4 is recommended. This ID can be specified by the patch sender. Than the listener doesn't receive the message.
+  optional bool needs_initial_value = 4;
+}
+
+/**
+ * Represents the request message for starting listening delta data
+ */
+message ListenDeltaRequest{
+  string thing = 1;   // thing name to listen delta data
+  repeated string filters = 2; // path for listening data. If empty, all data is listened.  E.g. ["Vehicle/IgnitionOn", "Body/Trunk/IsLocked"]
+  optional string id = 3; // Specify a unique ID. uuid v4 is recommended. This ID can be specified by the patch sender. Than the listener doesn't receive the message.
+  optional bool needs_initial_value = 4;
+}
+
+/**
+ * Represents the response message for GetReport
+ */
+message GetResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  google.protobuf.Value item = 3; // JSON data you got
+}
+
+
+/**
+ * Represents the response message for PatchReport
+ */
+message PatchResponse {
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+}
+
+/**
+ * Represents the response message for PatchAndWait
+ */
+message PatchAndWaitResponse {
+  bool completed = 1; // whether desired request is solved?
+  google.protobuf.Value delta = 2; // remaining delta between reports and desires
+}
+
+/**
+ * Represents the response message for Delete
+ */
+message DeleteResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+}
+
+
+/**
+ * Represents the response message for Upload
+ */
+message UploadResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+}
+
+
+/**
+ * Represents the response message for GetThingList
+ */
+message GetThingListResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  repeated string thing_names = 3; // thing name list you got
+  uint64 total_count = 4; // all things count managed in Duo
+  optional string next_token = 5; // next_token for getting next page (Used in calling next GetThingList)
+}
+
+/**
+ * Represents the stream response message for ListenReport/ListenDesire/ListenDelta
+ */
+message ListenResponse{
+  google.protobuf.ListValue items = 1; //new items you got
+  optional google.protobuf.Struct meta = 2; // meta data
+}
+
+
+message PingRequest{
+  int32 seed = 1;
+}
+
+message PingResponse{
+  int32 seed = 1;
+}
+
+
+
+/**
+ * Service for handling Job
+ */
+service JobService{
+  // MEMO: GetJob must be before GetNextJob for grpc-gateway
+  rpc GetJob(GetJobRequest) returns (GetJobResponse) {
+    option (google.api.http) = {
+      get: "/jobs/{thing}/{job_id}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get target job"
+    //   description: "Used to get job that has specified job_id"
+    // };
+  }; // Used to get job that has specified job_id
+
+  rpc GetNextJob(GetNextJobRequest) returns (GetJobResponse) {
+    option (google.api.http) = {
+      get: "/jobs/{thing}/next"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get next job"
+    //   description: "Used to get job that should be processed next"
+    // };
+  }; // Used to get job that should be processed next
+
+  rpc GetUnfinishedJobs(GetUnfinishedJobsRequest) returns(GetJobsResponse) {
+    option (google.api.http) = {
+      get: "/jobs/{thing}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get unfinished jobs"
+    //   description: "Used to get list of unfinished jobs"
+    // };
+  }; // Used to get list of unfinished jobs
+  rpc GetFinishedJobs(GetFinishedJobsRequest) returns(GetJobsResponse) {
+    option (google.api.http) = {
+      get: "/results/{thing}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Get finished jobs"
+    //   description: "Used to get list of finished jobs"
+    // };
+  }; // Used to get list of finished jobs
+  rpc CreateJob(CreateJobRequest) returns (CreateJobResponse) {
+    option (google.api.http) = {
+      post: "/jobs/{thing}"
+      body: "*"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Create new job"
+    //   description: "Used to create new job"
+    //   responses: {
+    //     key: "200"
+    //     value: {
+    //       schema: {
+    //         json_schema: {
+    //           ref: ".duo.CreateJobResponse"
+    //         }
+    //       }
+    //     }
+    //   }
+    // };
+  };  // Used to create new job
+  rpc DeleteFinishedJobs(DeleteFinishedJobsRequest) returns(JobDeleteResponse) {
+    option (google.api.http) = {
+      delete: "/results/{thing}"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Delete finished jobs"
+    //   description: "Used to delete finished jobs"
+    // };
+  }; // Used to delete finished jobs
+  rpc UpdateJob(UpdateJobRequest) returns (UpdateJobResponse) {
+    option (google.api.http) = {
+      patch: "/jobs/{thing}/{job_id}"
+      body: "*"
+    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   summary: "Update the job"
+    //   description: "Used to update the job"
+    // };
+  }; // Used to update the job
+
+  rpc ListenNextJobArrived(ListenNextJobArrivedRequest) returns(stream ListenNextJobArrivedResponse); // Used to listen a job that should be processed next
+  rpc ListenJobChanged(ListenJobChangedRequest) returns(stream ListenJobChangedResponse); // Used to listen a job that is created or modified
+  rpc Ping(PingRequest) returns(PingResponse);
+}
+
+
+
+/**
+ * Represents job's status
+ *
+ * Possible transitions are below;
+ *    [*]--> QUEUED : POST Job
+ *    QUEUED-->REJECTED : PATCH status=REJECTED
+ *    QUEUED-->CANCELED : PATCH status=CANCELED
+ *    QUEUED-->ACCEPTED : PATCH status=ACCEPTED
+ *    QUEUED-->IN_PROGRESS : PATCH status=IN_PROGRESS
+ *    QUEUED-->IN_PROGRESS : PATCH progress=[1-99]%
+ *    QUEUED-->SUCCEEDED : PATCH status=SUCCEEDED
+ *    QUEUED-->FAILED : PATCH status=FAILED
+ *    QUEUED-->QUEUED : PATCH progress=0%
+ *    ===
+ *    ACCEPTED-->SUCCEEDED :  PATCH status=SUCCEEDED
+ *    ACCEPTED-->FAILED : PATCH status=FAILED
+ *    ACCEPTED-->IN_PROGRESS :  PATCH status=IN_PROGRESS
+ *    ACCEPTED-->ACCEPTED : PATCH progress=0%
+ *    ===
+ *    IN_PROGRESS-->IN_PROGRESS : PATCH progress=[1-99]%
+ *    IN_PROGRESS-->IN_PROGRESS : PATCH progress=0%
+ *    IN_PROGRESS-->SUCCEEDED : PATCH progress=100%
+ *    IN_PROGRESS-->SUCCEEDED : PATCH status=SUCCEEDED
+ *    IN_PROGRESS-->ACCEPTED : PATCH status=ACCEPTED
+ *    IN_PROGRESS-->FAILED : PATCH status=FAILED
+ */
+enum JobStatus{
+  UNDEFINED = 0; // not used
+  CANCELED = 1; // Job is canceled by the REQUESTER
+  FAILED = 2;  // Job receiver failed to process the job
+  REJECTED = 3; // Job receiver rejected to process the job
+  SUCCEEDED = 4; // Job receiver completed to process the job
+  ACCEPTED = 5; // Job receiver accepted the job (Job receiver should process this later)
+  QUEUED = 6; // Job is just created. No one handle this yet
+  IN_PROGRESS = 7; // Job receiver is processing the job
+}
+
+/**
+ * Represents the request message for getting a job that should be processed next
+ */
+message GetNextJobRequest{
+  string thing = 1; // thing name to get next job
+}
+
+/**
+ * Represents the request message for getting a job that has specified job_id
+ */
+message GetJobRequest{
+  string thing = 1; // thing name to get the job
+  string job_id = 2; // job id to get the job
+}
+
+/**
+ * Represents the request message for getting list of unfinished jobs
+ */
+message GetUnfinishedJobsRequest{
+  string thing = 1; // thing name to get list of unfinished jobs
+}
+
+/**
+ * Represents the request message for getting list of finished jobs
+ */
+message GetFinishedJobsRequest{
+  string thing = 1; // thing name to get list of finished jobs
+}
+
+
+/**
+ * Represents the request message for creating new job
+ */
+message CreateJobRequest{
+  string thing = 1; // thing name to creating new job
+  google.protobuf.Struct document = 2; // free document for telling receiver what to be do
+}
+
+/**
+ * Represents the request message for updating the job
+ */
+message UpdateJobRequest{
+  string thing = 1; // thing name to delete all data
+  string job_id = 2; // job id to update job
+  optional JobStatus status = 3; // job status to be set
+  optional uint32 progress = 4; // progress to be set (0-100)
+  optional string response = 5; // free response string from job receiver
+}
+
+/**
+ * Represents the request message for deleting the job
+ */
+message DeleteFinishedJobsRequest{
+  string thing = 1; // thing name to delete all data
+}
+
+/**
+ * Represents the request message for starting listening next job arrived
+ */
+message ListenNextJobArrivedRequest{
+  string thing = 1; // thing name to delete all data
+}
+
+/**
+ * Represents the request message for starting listening job creation/modification
+ */
+message ListenJobChangedRequest{
+  string thing = 1; // thing name to delete all data
+}
+
+
+/**
+ * Represents Job structure.
+ */
+message Job{
+  string job_id = 1; // unique job id
+  JobStatus status = 2; // job status
+  uint32 progress = 3; // job progress (0-100)
+  uint64 queuedAt = 4; // job created time
+  uint64 lastUpdatedAt = 5; // job last modified time
+  string response = 6; // response from job receiver
+  google.protobuf.Struct document = 7; // free document for telling job receiver what to do
+}
+
+
+/**
+ * Represents the response message for GetJob
+ */
+message GetJobResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  optional Job job = 3; // Job you got
+}
+
+/**
+ * Represents the response message for GetUnfinishedJobs/GetFinishedJobs
+ */
+message GetJobsResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  repeated Job jobs = 3; // Jobs you got
+}
+
+
+/**
+ * Represents the response message for CreateJob
+ */
+message CreateJobResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+  string job_id = 4; // created job's id
+  // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+  //   example: '{"code":"OK","requestId":"bced8537-33d0-4e93-b537-ba5933f5f403","message":"job created","jobId":"bced8537-33d0-4e93-b537-ba5933f5f403"}'
+  // };
+}
+
+/**
+ * Represents the response message for UpdateJob
+ */
+message UpdateJobResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+}
+
+/**
+ * Represents the response message for DeleteFinishedJobs
+ */
+message JobDeleteResponse{
+  StatusCode code = 1; // status code for the request
+  string request_id = 2; // unique request id (Used only for asking to support)
+  string message = 3; // detailed log message for the operation
+}
+
+/**
+ * Represents the response message for ListenNextJobArrived
+ */
+message ListenNextJobArrivedResponse{
+  optional Job job = 1; // a job should be processed next (if nothing, no job to be processed)
+}
+
+/**
+ * Represents the message contained in ListenJobChangedResponse
+ */
+message JobCreateion{
+  string job_id = 1; // created job's id
+  google.protobuf.Struct document = 2; // created job's document
+}
+
+/**
+ * Represents the message contained in ListenJobChangedResponse
+ */
+message JobModification{
+  string job_id = 1; // modified job's id
+  optional JobStatus status = 2; // job status (If modified)
+  optional uint32 progress = 3; // progress (If changed)
+  optional string response = 4; // response  (If changed)
+}
+
+/**
+ * Represents the message contained in JobListenEvent
+ */
+message JobListenEvent{
+  bool connected = 1;
+}
+
+/**
+ * Represents the response message for ListenJobChanged
+ */
+message ListenJobChangedResponse{
+  oneof change{
+    JobCreateion job_creation = 1; // Information if some job was created.
+    JobModification job_modification = 2; // Information if some job was modified.
+    JobListenEvent job_event = 3; // Event, connected event is delivered when connected.
+  }
+}

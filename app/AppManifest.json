@@ -1,0 +1,184 @@
+{
+    "manifestVersion": "v3",
+    "name": "SampleApp",
+    "interfaces": [
+        {
+            "type": "vehicle-signal-interface",
+            "config": {
+                "src": "/workspaces/vehicle-app-cpp-template/downloaded-datamodel/dataModel_basic.json",
+                "_gitlab_src": "https://gitlab.geniie.net/epfapi/dn_velocitas/dn_vehicle_capability/-/raw/main/dataModel_basic.json",
+
+                "datapoints":
+                {
+                    "required": [
+                        {
+                            "path": "Vehicle.EgoVehicle.Motion.Locomotion.Speed",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.TractionBattery.StateOfCharge.Current",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.TractionBattery.CurrentVoltage",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.TractionBattery.BatteryLevel",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.Range",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.Transmission.CurrentGear",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Powertrain.FuelSystem.Level",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.IsAirConditioningActive",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.AirCompressor.IsAirCompressorOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.Sync.IsSyncOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.EcoMode.IsEcoModeOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.AirPurifier1.IsAirPurifier1On",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.AirPurifier2.IsAirPurifier2On",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.AirPurifier3.IsAirPurifier3On",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.PollenRemove.IsPollenRemoveOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.Swing.IsSwingOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.PmRemove.IsPmRemoveOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.Recirculation.RecirculationState",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.HVAC.Heater.IsHeaterOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.RearShade.Switch",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.RearShade.Position",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.Infotainment.Media.Action",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.Infotainment.Media.Played.Source",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.Infotainment.Media.Volume",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.Infotainment.Media.IsOn",
+                            "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.EgoVehicle.Cabin.Infotainment.Navigation.IsOn",
+                            "required": "true",
+                            "access": "read"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "pubsub",
+            "config": {
+                "reads": [ "sampleapp/getSpeed" ],
+                "writes": [
+                    "sampleapp/getSpeed/response",
+                    "sampleapp/currentSpeed",
+                    "sampleapp/batterySOC",
+                    "sampleapp/batteryVoltage",
+                    "sampleapp/batteryLevel",
+                    "sampleapp/range",
+                    "sampleapp/currentGear",
+                    "sampleapp/fuelLevel",
+                    "sampleapp/hvac/acActive",
+                    "sampleapp/hvac/airCompressor",
+                    "sampleapp/hvac/sync",
+                    "sampleapp/hvac/ecoMode",
+                    "sampleapp/hvac/airPurifier1",
+                    "sampleapp/hvac/airPurifier2",
+                    "sampleapp/hvac/airPurifier3",
+                    "sampleapp/hvac/pollenRemove",
+                    "sampleapp/hvac/swing",
+                    "sampleapp/hvac/pmRemove",
+                    "sampleapp/hvac/recirculation",
+                    "sampleapp/hvac/heater",
+                    "sampleapp/cabin/rearShadeSwitch",
+                    "sampleapp/cabin/rearShadePosition",
+                    "sampleapp/infotainment/mediaAction",
+                    "sampleapp/infotainment/mediaSource",
+                    "sampleapp/infotainment/mediaVolume",
+                    "sampleapp/infotainment/mediaOn",
+                    "sampleapp/infotainment/navigationOn"
+                ]
+            }
+        }
+    ]
+}

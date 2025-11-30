@@ -1,0 +1,8 @@
+.conan_home
+.devcontainer
+.github
+.vscode
+**/build
+**/deploy
+**/docs
+**/licenses

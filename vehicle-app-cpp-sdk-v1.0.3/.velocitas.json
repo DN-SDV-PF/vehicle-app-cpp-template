@@ -1,0 +1,22 @@
+{
+    "packages": {
+        "devenv-runtimes": "v4.1.0",
+        "devenv-devcontainer-setup": "v3.0.0",
+        "devenv-github-templates": "v1.0.5",
+        "devenv-github-workflows": "v7.0.0"
+    },
+    "components": [
+        "devcontainer-setup",
+        "vehicle-signal-interface",
+        "runtime-local",
+        "github-templates",
+        "github-workflows"
+    ],
+    "variables": {
+        "language": "cpp",
+        "repoType": "sdk",
+        "githubRepoId": "eclipse-velocitas/vehicle-app-cpp-sdk",
+        "appManifestPath": "examples/seat-adjuster/AppManifest.json"
+    },
+    "cliVersion": "v0.13.2"
+}
