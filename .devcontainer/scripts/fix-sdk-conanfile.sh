@@ -161,8 +161,21 @@ CONANFILE_CONTENT
 
 # Find all locations where SDK conanfile.py might exist
 
-# 1. Velocitas projects directory
-SDK_PATH=$(find ~/.velocitas/projects -name "vehicle-app-sdk-cpp" -type d 2>/dev/null | head -1)
+# 1. Velocitas projects directory - search more broadly
+SDK_PATH=""
+for project_dir in ~/.velocitas/projects/*/; do
+    if [ -d "${project_dir}vehicle-app-sdk-cpp" ]; then
+        SDK_PATH="${project_dir}vehicle-app-sdk-cpp"
+        break
+    fi
+done
+
+# If not found, try find command
+if [ -z "$SDK_PATH" ]; then
+    SDK_PATH=$(find ~/.velocitas/projects -name "vehicle-app-sdk-cpp" -type d 2>/dev/null | head -1)
+fi
+
+echo "SDK_PATH found: $SDK_PATH"
 
 # 2. Conan cache - exported recipes
 CONAN_EXPORT_PATH=$(find ~/.conan2/p -path "*/vehicle-app-sdk/*" -name "conanfile.py" 2>/dev/null | head -1)
@@ -171,17 +184,22 @@ if [ -n "$CONAN_EXPORT_PATH" ]; then
 fi
 
 # 3. Conan cache - build directories (where the actual build happens)
-CONAN_BUILD_PATHS=$(find ~/.conan2/p/b -name "conanfile.py" 2>/dev/null | xargs grep -l "vehicle-app-sdk" 2>/dev/null)
+CONAN_BUILD_PATHS=$(find ~/.conan2/p/b -name "conanfile.py" 2>/dev/null | xargs grep -l "vehicle-app-sdk" 2>/dev/null || true)
 
 FIXED_COUNT=0
 
-# Fix SDK in velocitas projects
+# Fix SDK in velocitas projects - ALWAYS check and fix if SDK_PATH exists
 if [ -n "$SDK_PATH" ] && [ -f "$SDK_PATH/conanfile.py" ]; then
-    if grep -q "build_script" "$SDK_PATH/conanfile.py"; then
+    # Check for the broken pattern (build_script used without definition)
+    if grep -q "build_script" "$SDK_PATH/conanfile.py" && ! grep -q "cmake.configure(variables=" "$SDK_PATH/conanfile.py"; then
         echo "Fixing conanfile.py in velocitas projects: $SDK_PATH"
         write_fixed_conanfile "$SDK_PATH/conanfile.py"
         FIXED_COUNT=$((FIXED_COUNT + 1))
+    else
+        echo "SDK conanfile.py already fixed or doesn't need fixing"
     fi
+else
+    echo "WARNING: SDK_PATH not found or conanfile.py doesn't exist"
 fi
 
 # Fix SDK in Conan export cache
@@ -220,17 +238,27 @@ done
 if [ $FIXED_COUNT -gt 0 ]; then
     echo "✓ Fixed $FIXED_COUNT conanfile.py file(s)"
     
+    # First, completely remove SDK from Conan cache to ensure clean state
+    echo "Removing vehicle-app-sdk from Conan cache..."
+    conan remove "vehicle-app-sdk*" -c 2>/dev/null || true
+    echo "✓ SDK removed from Conan cache"
+    
     # Re-export to Conan cache if SDK_PATH exists
     if [ -n "$SDK_PATH" ] && [ -d "$SDK_PATH" ]; then
         echo "Re-exporting SDK to Conan cache..."
         cd "$SDK_PATH" && conan export . -nr
         echo "✓ SDK re-exported to Conan cache"
     fi
-    
-    # Clear any cached build to force rebuild with fixed conanfile
-    echo "Clearing Conan build cache for vehicle-app-sdk..."
-    conan cache clean "vehicle-app-sdk*" --build 2>/dev/null || true
-    echo "✓ Build cache cleared"
 else
     echo "No broken conanfile.py files found or all already fixed"
+    
+    # Even if no files were fixed, ensure SDK is exported with correct conanfile
+    if [ -n "$SDK_PATH" ] && [ -d "$SDK_PATH" ]; then
+        # Check if SDK needs to be in cache
+        if ! conan list "vehicle-app-sdk*" 2>/dev/null | grep -q "vehicle-app-sdk"; then
+            echo "SDK not in cache, exporting..."
+            cd "$SDK_PATH" && conan export . -nr
+            echo "✓ SDK exported to Conan cache"
+        fi
+    fi
 fi

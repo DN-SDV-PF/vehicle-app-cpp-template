@@ -35,6 +35,14 @@ echo "#######################################################"
 velocitas init
 velocitas sync
 
+echo "#######################################################"
+echo "### Fix SDK conanfile.py                            ###"
+echo "#######################################################"
+# Fix the broken SDK conanfile.py immediately after velocitas downloads it
+if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
+    .devcontainer/scripts/fix-sdk-conanfile.sh
+fi
+
 # Some setup might be required even in offline mode
 .devcontainer/scripts/setup-dependencies.sh
 
