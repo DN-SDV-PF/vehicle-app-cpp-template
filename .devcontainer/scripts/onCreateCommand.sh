@@ -35,6 +35,12 @@ echo "#######################################################"
 velocitas init
 velocitas sync
 
+# Fix SDK conanfile.py after velocitas sync downloads the SDK
+# This must run AFTER velocitas sync and BEFORE setup-dependencies.sh
+if [[ -x .devcontainer/scripts/fix-sdk-conanfile.sh ]]; then
+    .devcontainer/scripts/fix-sdk-conanfile.sh
+fi
+
 # Some setup might be required even in offline mode
 .devcontainer/scripts/setup-dependencies.sh
 
