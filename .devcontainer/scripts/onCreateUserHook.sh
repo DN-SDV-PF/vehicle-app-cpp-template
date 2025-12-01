@@ -1,6 +1,21 @@
 #!/bin/bash
 # User-defined on-create hook
 # This script runs during container creation, before velocitas init
+# This file is NOT managed by velocitas - it will persist across rebuilds
+
+echo "######################################################"
+echo "### Installing Conan SDK fix hook (PRE-INSTALL)   ###"
+echo "######################################################"
+# Install Conan hook BEFORE velocitas init downloads the SDK
+# This ensures the hook is in place when conan install runs later
+mkdir -p ~/.conan2/extensions/hooks
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/conan_hooks/fix_sdk_hook.py" ]; then
+    cp "$SCRIPT_DIR/conan_hooks/fix_sdk_hook.py" ~/.conan2/extensions/hooks/
+    echo "✓ Conan hook pre-installed to ~/.conan2/extensions/hooks/"
+else
+    echo "WARNING: Conan hook file not found at $SCRIPT_DIR/conan_hooks/fix_sdk_hook.py"
+fi
 
 echo "######################################################"
 echo "### Pre-downloading vehicle model from GitLab ###"
