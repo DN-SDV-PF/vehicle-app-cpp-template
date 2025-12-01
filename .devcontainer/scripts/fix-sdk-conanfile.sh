@@ -7,6 +7,15 @@ echo "######################################################"
 echo "### Fixing SDK conanfile.py for Conan build ###"
 echo "######################################################"
 
+# Also install the Conan hook for runtime fixing
+echo "Installing Conan pre-build hook..."
+mkdir -p ~/.conan2/extensions/hooks
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/conan_hooks/fix_sdk_hook.py" ]; then
+    cp "$SCRIPT_DIR/conan_hooks/fix_sdk_hook.py" ~/.conan2/extensions/hooks/
+    echo "✓ Conan hook installed to ~/.conan2/extensions/hooks/"
+fi
+
 # Function to write the fixed conanfile.py content
 write_fixed_conanfile() {
     local target_file="$1"

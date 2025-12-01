@@ -121,7 +121,7 @@
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [ 8080, 8090, 1883, 55555, 50050, 50051, 50052, 50053 ],
 	// Use 'onCreateCommand' to run commands when the container is created.
 	"onCreateCommand": "bash .devcontainer/scripts/onCreateCommand.sh",
 	"postStartCommand": "bash .devcontainer/scripts/postStartCommand.sh",

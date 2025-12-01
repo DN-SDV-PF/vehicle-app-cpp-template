@@ -42,6 +42,14 @@ if [[ -z "${VELOCITAS_OFFLINE}" ]]; then
     sudo apt-get install -y cppcheck clang-format-14 clang-tidy-14
     sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-14 100
     sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-14 100
+
+    # Install Conan hook to fix vehicle-app-sdk build issue
+    echo "Installing Conan hook to fix SDK build..."
+    mkdir -p ~/.conan2/extensions/hooks
+    if [ -f ".devcontainer/scripts/conan_hooks/fix_sdk_hook.py" ]; then
+        cp .devcontainer/scripts/conan_hooks/fix_sdk_hook.py ~/.conan2/extensions/hooks/
+        echo "✓ Conan hook installed"
+    fi
 fi
 
 echo "#######################################################"
