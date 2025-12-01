@@ -18,6 +18,14 @@ sudo chmod +x .devcontainer/scripts/*.sh
 
 .devcontainer/scripts/setup-git.sh
 
+# Install Conan hook for SDK fix (before any conan commands)
+echo "Installing Conan SDK fix hook..."
+mkdir -p ~/.conan2/extensions/hooks
+if [ -f ".devcontainer/scripts/conan_hooks/fix_sdk_hook.py" ]; then
+    cp .devcontainer/scripts/conan_hooks/fix_sdk_hook.py ~/.conan2/extensions/hooks/
+    echo "✓ Conan hook installed"
+fi
+
 if [[ -z "${VELOCITAS_OFFLINE}" ]]; then
     .devcontainer/scripts/configure-codespaces.sh
     .devcontainer/scripts/upgrade-cli.sh
@@ -34,14 +42,6 @@ echo "### Run VADF Lifecycle Management                   ###"
 echo "#######################################################"
 velocitas init
 velocitas sync
-
-echo "#######################################################"
-echo "### Fix SDK conanfile.py                            ###"
-echo "#######################################################"
-# Fix the broken SDK conanfile.py immediately after velocitas downloads it
-if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
-    .devcontainer/scripts/fix-sdk-conanfile.sh
-fi
 
 # Some setup might be required even in offline mode
 .devcontainer/scripts/setup-dependencies.sh
