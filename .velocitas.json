@@ -1,9 +1,10 @@
 {
     "packages": {
-        "devenv-runtimes": "@feature/v0.1.0",
-        "devenv-github-workflows": "@feature/v0.1.0",
-        "devenv-github-templates": "@feature/v0.1.0",
-        "devenv-devcontainer-setup": "@feature/quad-local"
+        "https://github.com/DN-SDV-PF/devenv-runtimes.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/devenv-github-workflows.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/devenv-github-templates.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/quad-local.git": "@feature/quad-local",
+        "devenv-devcontainer-setup": "v3.0.0"
     },
     "components": [
         "runtime-local",
@@ -13,6 +14,7 @@
         "github-workflows",
         "github-templates",
         "devcontainer-setup",
+        "quad-local",
         "vehicle-signal-interface",
         "grpc-interface-support",
         "sdk-installer",
@@ -23,7 +25,9 @@
         "repoType": "app",
         "appManifestPath": "app/AppManifest.json",
         "githubRepoId": "eclipse-velocitas/vehicle-app-cpp-template",
-        "gitProvider": "gitlab"
+        "gitProvider": "gitlab",
+        "sdkGitRepo@sdk-installer": "https://github.com/DN-SDV-PF/vehicle-app-cpp-sdk.git",
+        "sdkVersion@sdk-installer": "feature/v1.0.3"
     },
-    "cliVersion": "v0.1.0"
+    "cliVersion": "v0.13.2"
 }

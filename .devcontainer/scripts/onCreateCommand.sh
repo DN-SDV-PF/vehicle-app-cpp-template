@@ -1,6 +1,5 @@
 #!/bin/bash
 # This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
-# This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
 # Copyright (c) 2022-2025 Contributors to the Eclipse Foundation
 #
 # This program and the accompanying materials are made available under the
@@ -42,9 +41,7 @@ velocitas sync
 echo "#######################################################"
 echo "### VADF package status                             ###"
 echo "#######################################################"
-# --ignore-boundsフラグはセマンティックバージョン形式のタグのみ処理する
-# velocitas upgrade --dry-run --ignore-bounds
-velocitas upgrade --dry-run
+velocitas upgrade --dry-run --ignore-bounds
 
 # Don't let container creation fail if lifecycle management fails
 echo "Done!"

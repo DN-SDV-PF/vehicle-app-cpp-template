@@ -1,6 +1,5 @@
 #!/bin/bash
 # This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
-# This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
 # Copyright (c) 2024-2025 Contributors to the Eclipse Foundation
 #
 # This program and the accompanying materials are made available under the
@@ -24,9 +23,3 @@ POST_START_USER_HOOK_PATH=.devcontainer/scripts/onPostStartUserHook.sh
 if [[ -x $POST_START_USER_HOOK_PATH ]]; then
     $POST_START_USER_HOOK_PATH
 fi
-
-echo "#######################################################"
-echo "### Run quad local ###"
-echo "#######################################################"
-.devcontainer/scripts/setup-quad-local.sh
-velocitas quad start

@@ -1,8 +1,9 @@
 {
     "packages": {
-        "devenv-runtimes": "@feature/v0.1.0",
-        "devenv-github-workflows": "@feature/v0.1.0",
-        "devenv-github-templates": "@feature/v0.1.0",
-        "devenv-devcontainer-setup": "@feature/quad-local"
+        "https://github.com/DN-SDV-PF/devenv-runtimes.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/devenv-github-workflows.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/devenv-github-templates.git": "@feature/v0.1.0",
+        "https://github.com/DN-SDV-PF/quad-local.git": "@feature/quad-local",
+        "devenv-devcontainer-setup": "v3.0.0"
     }
 }
