@@ -18,9 +18,4 @@
 # Keeping this script provides backward compatibility for all scripts and
 # pipelines relying on it.
 
-# Fix SDK conanfile.py before installing dependencies
-if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
-    .devcontainer/scripts/fix-sdk-conanfile.sh
-fi
-
 velocitas exec build-system install $@
