@@ -29,29 +29,11 @@ if [[ -x $ON_CREATE_USER_HOOK_PATH ]]; then
     $ON_CREATE_USER_HOOK_PATH
 fi
 
-# Install Conan hook for SDK fix BEFORE velocitas init
-echo "#######################################################"
-echo "### Installing Conan SDK fix hook                   ###"
-echo "#######################################################"
-mkdir -p ~/.conan2/extensions/hooks
-if [ -f ".devcontainer/scripts/conan_hooks/fix_sdk_hook.py" ]; then
-    cp .devcontainer/scripts/conan_hooks/fix_sdk_hook.py ~/.conan2/extensions/hooks/
-    echo "✓ Conan hook installed to ~/.conan2/extensions/hooks/"
-fi
-
 echo "#######################################################"
 echo "### Run VADF Lifecycle Management                   ###"
 echo "#######################################################"
 velocitas init
 velocitas sync
-
-# Fix SDK conanfile.py AFTER velocitas downloads the SDK
-echo "#######################################################"
-echo "### Fixing SDK conanfile.py                         ###"
-echo "#######################################################"
-if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
-    .devcontainer/scripts/fix-sdk-conanfile.sh
-fi
 
 # Some setup might be required even in offline mode
 .devcontainer/scripts/setup-dependencies.sh

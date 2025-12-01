@@ -17,6 +17,58 @@ MQTT_TOPIC="sampleapp/currentSpeed"
 TEST_LOG="/tmp/sampleapp_test.log"
 APP_LOG="/tmp/sampleapp_integration.log"
 WORKSPACE_ROOT="$(cd $(dirname $0)/../.. && pwd)"
+QUAD_LOCAL_DIR="$WORKSPACE_ROOT/quad-local"
+
+# Function to check if Quad is running
+is_quad_running() {
+    curl -s http://localhost:50050 > /dev/null 2>&1
+}
+
+# Function to setup and start quad-local
+setup_and_start_quad() {
+    echo -e "\n${BLUE}[SETUP] Checking Quad Local...${NC}"
+    
+    # Check if quad-local directory exists
+    if [ ! -d "$QUAD_LOCAL_DIR" ]; then
+        echo "  Quad Local not installed, running setup script..."
+        if [ -f "$WORKSPACE_ROOT/.devcontainer/scripts/setup-quad-local.sh" ]; then
+            bash "$WORKSPACE_ROOT/.devcontainer/scripts/setup-quad-local.sh"
+        else
+            echo -e "${RED}  ✗ setup-quad-local.sh not found${NC}"
+            exit 1
+        fi
+    fi
+    
+    # Check if Quad is already running
+    if is_quad_running; then
+        echo -e "${GREEN}  ✓ Quad Local is already running${NC}"
+        return 0
+    fi
+    
+    echo "  Starting Quad Local..."
+    
+    # Make sure scripts are executable
+    chmod +x "$QUAD_LOCAL_DIR/quad/"*.sh 2>/dev/null || true
+    chmod +x "$QUAD_LOCAL_DIR/quad/internal/sound/"* 2>/dev/null || true
+    
+    # Start quad using docker compose directly (skip sound and patch scripts that may fail)
+    cd "$QUAD_LOCAL_DIR/quad"
+    docker compose up -d
+    
+    # Wait for Quad to be ready
+    echo "  Waiting for Quad REST API to be ready..."
+    for i in {1..30}; do
+        if is_quad_running; then
+            echo -e "${GREEN}  ✓ Quad Local is ready${NC}"
+            return 0
+        fi
+        echo "    Waiting... ($i/30)"
+        sleep 1
+    done
+    
+    echo -e "${RED}  ✗ Quad Local failed to start${NC}"
+    return 1
+}
 
 # Cleanup function
 cleanup() {
@@ -39,6 +91,9 @@ cleanup() {
     cd "$WORKSPACE_ROOT/dndatamodel-simulator"
     docker-compose down > /dev/null 2>&1 || true
     
+    # Note: We don't stop Quad Local as it may be used by other tests
+    # To stop it manually: cd quad-local/quad && docker compose down
+    
     echo -e "${GREEN}Cleanup complete${NC}"
 }
 
@@ -49,15 +104,18 @@ echo -e "${YELLOW}================================================${NC}"
 echo -e "${YELLOW}  SampleApp Integration Test - Full Run${NC}"
 echo -e "${YELLOW}================================================${NC}"
 
-# Step 1: Start Local Runtime
-echo -e "\n${BLUE}[STEP 1/5] Starting Local Runtime...${NC}"
+# Step 0: Setup and start Quad Local if not running
+setup_and_start_quad
+
+# Step 1: Start Local Runtime (MQTT broker)
+echo -e "\n${BLUE}[STEP 1/5] Starting Local Runtime (MQTT)...${NC}"
 cd "$WORKSPACE_ROOT"
 velocitas exec runtime-local up > /dev/null 2>&1 &
 echo "  Waiting for runtime to be ready..."
 sleep 5
 
 # Check if Quad services are up
-if ! curl -s http://localhost:50050 > /dev/null 2>&1; then
+if ! is_quad_running; then
     echo -e "${RED}  ✗ Quad REST API not accessible${NC}"
     exit 1
 fi
