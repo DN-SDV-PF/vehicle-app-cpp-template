@@ -47,4 +47,11 @@ fi
 echo "#######################################################"
 echo "### Install Dependencies                            ###"
 echo "#######################################################"
+
+# Fix SDK conanfile.py before installing dependencies
+# This must run after velocitas init/sync (which downloads the SDK) but before conan install
+if [ -x ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
+    .devcontainer/scripts/fix-sdk-conanfile.sh
+fi
+
 ./install_dependencies.sh 2>&1 | tee -a $HOME/install_dependencies.log

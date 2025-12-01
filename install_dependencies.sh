@@ -1,4 +1,6 @@
 #!/bin/bash
+# This file is maintained by velocitas CLI, do not modify manually. Change settings in .velocitas.json
+
 # Copyright (c) 2024-2025 Contributors to the Eclipse Foundation
 #
 # This program and the accompanying materials are made available under the
@@ -15,11 +17,5 @@
 
 # Keeping this script provides backward compatibility for all scripts and
 # pipelines relying on it.
-
-# Fix SDK conanfile.py before building (remote SDK has syntax error)
-if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
-    echo "Checking and fixing SDK conanfile.py if needed..."
-    .devcontainer/scripts/fix-sdk-conanfile.sh
-fi
 
 velocitas exec build-system install $@
