@@ -45,6 +45,21 @@ if [[ -z "${VELOCITAS_OFFLINE}" ]]; then
 fi
 
 echo "#######################################################"
+echo "### Fix SDK and Install Conan Hook                  ###"
+echo "#######################################################"
+# Install Conan hook to fix vehicle-app-sdk build issue
+mkdir -p ~/.conan2/extensions/hooks
+if [ -f ".devcontainer/scripts/conan_hooks/fix_sdk_hook.py" ]; then
+    cp .devcontainer/scripts/conan_hooks/fix_sdk_hook.py ~/.conan2/extensions/hooks/
+    echo "✓ Conan hook installed"
+fi
+
+# Run the fix script to patch any existing SDK files
+if [ -f ".devcontainer/scripts/fix-sdk-conanfile.sh" ]; then
+    .devcontainer/scripts/fix-sdk-conanfile.sh
+fi
+
+echo "#######################################################"
 echo "### Install Dependencies                            ###"
 echo "#######################################################"
 ./install_dependencies.sh 2>&1 | tee -a $HOME/install_dependencies.log

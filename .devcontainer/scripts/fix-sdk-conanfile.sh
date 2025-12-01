@@ -206,6 +206,10 @@ done
 echo "Searching for any remaining broken conanfile.py files..."
 BROKEN_FILES=$(grep -rl "build_script = os.path.abspath" ~/.conan2 2>/dev/null || true)
 for broken_file in $BROKEN_FILES; do
+    # Skip hook files - they should not be modified
+    if [[ "$broken_file" == *"/hooks/"* ]]; then
+        continue
+    fi
     if [ -f "$broken_file" ] && [[ "$broken_file" == *.py ]]; then
         echo "Fixing additional broken file: $broken_file"
         write_fixed_conanfile "$broken_file"
