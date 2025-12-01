@@ -6,7 +6,7 @@
             "type": "vehicle-signal-interface",
             "config": {
                 "src": "/workspaces/vehicle-app-cpp-template/downloaded-datamodel/dataModel_basic.json",
-                "_gitlab_src": "https://gitlab.geniie.net/epfapi/dn_velocitas/dn_vehicle_capability/-/raw/main/dataModel_basic.json",
+                "_gitlab_src": "https://github.com/DN-SDV-PF/dn_vehicle_capability/raw/main/dataModel_basic.json",
 
                 "datapoints":
                 {
